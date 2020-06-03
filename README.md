@@ -1,1 +1,1 @@
-# WebServer-Client-Disease-Aggregator
+# Server-Client-Disease-Aggregator
