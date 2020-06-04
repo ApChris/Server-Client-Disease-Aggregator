@@ -4,7 +4,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #define SIZE 20
+#define REDOUBLE 2
 
 typedef struct myVector
 {

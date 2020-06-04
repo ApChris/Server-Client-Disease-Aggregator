@@ -25,7 +25,7 @@ void PushBack_MyVector(myVector * vec, void * item)
 {
     if(Length_MyVector(vec) == Size_MyVector(vec))
     {
-        vec -> size *= 2;
+        vec -> size *= REDOUBLE;
         vec -> items = realloc(vec -> items, sizeof(void *) * vec -> size);
     }
 
