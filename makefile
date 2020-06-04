@@ -1,4 +1,5 @@
 OBJS2 = WhoServer/build/server.o \
+		WhoServer/build/myVector.o
 
 
 
@@ -23,7 +24,8 @@ clean:
 WhoServer/build/server.o: WhoServer/src/server.c
 	$(CC) $(FLAGS) $< -o $@
 
-
+WhoServer/build/myVector.o: WhoServer/src/myVector.c
+	$(CC) $(FLAGS) $< -o $@
 
 
 
