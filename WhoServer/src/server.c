@@ -1,5 +1,5 @@
 
-#include <stdio.h>
+#include "../include/myVector.h"
 
 long queryPortNum;
 long statisticsPortNum;
@@ -36,5 +36,21 @@ int main(int argc, char const *argv[])
 
     }
 
+    myVector * vector = NULL;
+    vector = Init_MyVector(vector);;
+
+
+    PushBack_MyVector(vector, "Hello");
+
+
+    printf("%ld\n",vector -> size);
+    for (long i = 0; i < 20; i++)
+    {
+        // printf("Hello\n");
+        UpdateItem_MyVector(vector,"Bye",i);
+        // printf("%s\n", (char *)vector -> items[i]);
+    }
+
+    Deallocate_MyVector(vector);
     return 0;
 }
