@@ -55,7 +55,6 @@ void UpdateItem_MyVector(myVector * vec, void * newItem, long position)
     {
         // update item's value with new item
         vec -> items[position] = newItem;
-        printf("%s\n",(char *)vec -> items[position]);
     }
 
 }
