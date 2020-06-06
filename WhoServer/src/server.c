@@ -29,12 +29,12 @@ int main(int argc, char const *argv[])
 {
 
     struct sockaddr_in server;
-    long serverLength;
+    uint64_t serverLength;
     struct sockaddr * serverPointer;
 
     struct sockaddr_in client;
     struct sockaddr * clientPointer;
-    long clientLength;
+    uint64_t clientLength;
 
 
     pthread_mutex_init(&mutex, NULL);
