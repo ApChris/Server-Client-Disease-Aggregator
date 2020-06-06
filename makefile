@@ -1,26 +1,78 @@
+OBJS = 	Master/build/diseaseAggregator.o \
+		Master/build/parentNamedPipesFifo.o \
+		Master/build/list.o \
+		Master/build/parentFunctions.o \
+		Master/build/requests.o
+
+
+OBJSWORKER = 	Master/build/worker.o \
+				Master/build/workerFunctions.o \
+				Master/build/workerNamedPipesFifo.o \
+				Master/build/list.o \
+				Master/build/date.o \
+				Master/build/hash.o \
+
+
 OBJS2 = WhoServer/build/server.o \
 		WhoServer/build/myVector.o
 
 
 
 OBJS3 = WhoClient/build/client.o \
-#
+		WhoServer/build/myVector.o	\
+		Master/build/list.o \
+		Master/build/date.o \
 # OBJS3 =
 
-CC = gcc
+CC = gcc -pthread
 FLAGS = -Wextra -Wall -g -c
 
 TARGET = master
+TARGETworker = worker
 TARGET2 = whoServer
 TARGET3 = whoClient
 
 
-all:  $(TARGET2) $(TARGET3)
+all:  $(TARGET) $(TARGETWORKER) $(TARGET2) $(TARGET3)
 
 clean:
-	$(RM) -r $(TARGET2) $(TARGET3) WhoClient/build/* WhoServer/build/*
+	$(RM) -r  $(TARGET) $(TARGETWORKER) $(TARGET2) $(TARGET3) Master/build/* WhoClient/build/* WhoServer/build/*
 
 
+
+# MASTER
+Master/build/diseaseAggregator.o: Master/src/diseaseAggregator.c
+	$(CC) $(FLAGS) $< -o $@
+
+Master/build/parentNamedPipesFifo.o: Master/src/parentNamedPipesFifo.c
+	$(CC) $(FLAGS) $< -o $@
+
+Master/build/list.o: Master/src/list.c
+	$(CC) $(FLAGS) $< -o $@
+
+Master/build/parentFunctions.o: Master/src/parentFunctions.c
+	$(CC) $(FLAGS) $< -o $@
+
+Master/build/requests.o: Master/src/requests.c
+	$(CC) $(FLAGS) $< -o $@
+
+
+
+Master/build/worker.o: Master/src/worker.c
+	$(CC) $(FLAGS) $< -o $@
+
+Master/build/workerFunctions.o: Master/src/workerFunctions.c
+	$(CC) $(FLAGS) $< -o $@
+
+Master/build/workerNamedPipesFifo.o: Master/src/workerNamedPipesFifo.c
+	$(CC) $(FLAGS) $< -o $@
+
+
+Master/build/date.o: Master/src/date.c
+	$(CC) $(FLAGS) $< -o $@
+
+Master/build/hash.o: Master/src/hash.c
+	$(CC) $(FLAGS) $< -o $@
 
 
 
@@ -38,6 +90,11 @@ WhoServer/build/myVector.o: WhoServer/src/myVector.c
 WhoClient/build/client.o: WhoClient/src/client.c
 	$(CC) $(FLAGS) $< -o $@
 
+$(TARGET) : $(OBJS)
+	$(CC) $(CFLAGS) $^ -o $@ -lm
+
+$(TARGETWORKER) : $(OBJSWORKER)
+	$(CC) $(CFLAGS) $^ -o $@ -lm
 
 
 $(TARGET2) : $(OBJS2)
@@ -45,5 +102,7 @@ $(TARGET2) : $(OBJS2)
 
 $(TARGET3) : $(OBJS3)
 	$(CC) $(CFLAGS) $^ -o $@ -lm
+
+
 
 rebuild: clean all
