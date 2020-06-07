@@ -6,6 +6,9 @@
 #include <pthread.h>
 #include "../include/myVector.h"
 
+
+#define MAXIMUMBUFFER 4096
+
 // arguments
 long queryPortNum;
 long statisticsPortNum;
@@ -25,6 +28,9 @@ long sock;
 long newSock;
 long optval = 1;
 
+long ReadFromSocket(long fileDescriptor, char * buffer);
+void WriteToSocket(long fileDescriptor, char * buffer);
+
 int main(int argc, char const *argv[])
 {
 
@@ -36,6 +42,8 @@ int main(int argc, char const *argv[])
     struct sockaddr * clientPointer;
     uint64_t clientLength;
 
+    // For gethostbyname
+    struct hostent * gtHName;
 
     pthread_mutex_init(&mutex, NULL);
     pthread_cond_init(&condinationVariable, NULL);
@@ -122,7 +130,129 @@ int main(int argc, char const *argv[])
     }
 
     printf("Server with pid = %ld\n",(long)getpid());
+    char message[MAXIMUMBUFFER] = "";
+
+    clientPointer = (struct sockaddr *) &client;
+    clientLength = sizeof client;
+
+    if((newSock = accept(sock, clientPointer, &clientLength)) < 0)
+    {
+        perror("Server: accept has been failed:");
+        exit(EXIT_FAILURE);
+    }
+
+    if((gtHName = gethostbyaddr((char *) &client.sin_addr.s_addr, sizeof client
+        . sin_addr . s_addr, client . sin_family)) == NULL)
+        {
+            perror("Server: Gethostbyaddr has been failed:");
+            exit(EXIT_FAILURE);
+        }
+        printf("EDWW\n");
+
+        // strcpy(message,"Hello World");
+    ReadFromSocket(newSock,message);
+     printf("%s\n",message);
+    printf("EDWW\n");
+    ReadFromSocket(newSock,message);
+     printf("%s\n",message);
+    for (long i = 0; i < 3; i++)
+    {
 
 
+        // printf("%s\n",message);
+    }
+    printf("EDWW\n");
     return 0;
+}
+
+
+long ReadFromSocket(long fileDescriptor, char * buffer)
+{
+    long bytesNumber;
+    long length = 0;
+    long counter = 0;
+
+    char finalBuffer[MAXIMUMBUFFER] = "";
+    char tempBuffer[MAXIMUMBUFFER] = "";
+
+    if(read(fileDescriptor, &length, sizeof(length)) > 0)
+    {
+
+
+        long quotient = length/bufferSize;
+        if(quotient == 0)
+        {
+            if( (bytesNumber = read(fileDescriptor,tempBuffer, length)) >= 0)
+            {
+                char chunkLength[length];
+                strcpy(chunkLength,tempBuffer);
+                strcat(finalBuffer,chunkLength);
+            }
+
+        }
+        else
+        {
+            // for every chunk
+            for (long i = 0; i < quotient; i++)
+            {
+                char chunk[bufferSize];
+
+                // read bufferSize bytes and append them to finalBuffer
+                if( (bytesNumber = read(fileDescriptor,tempBuffer, bufferSize)) >= 0)
+                {
+                    strcpy(chunk,tempBuffer);
+
+                    strcat(finalBuffer,chunk);
+
+                    // for last bytes
+                    if(i + 1 == quotient)
+                    {
+                        char lastChunk[bufferSize];
+                        long remainder = length - (quotient*bufferSize);
+                        bytesNumber = read(fileDescriptor, tempBuffer, remainder);
+
+                        strcpy(lastChunk,tempBuffer);
+                        strcat(finalBuffer,lastChunk);
+                    }
+                }
+            }
+        }
+        counter += length;
+
+    }
+    strcpy(buffer, finalBuffer);
+
+    return counter;
+}
+
+void WriteToSocket(long fileDescriptor, char * buffer)
+{
+    long length = strlen(buffer) + 1;
+
+    if(write(fileDescriptor, &length, sizeof(length)) < 0)
+    {
+        perror("Server:WriteToSocket has been failed:");
+        exit(EXIT_FAILURE);
+    }
+
+    // if bufferSize > length . just read length bytes
+    long quotient = length/bufferSize;
+    if(quotient == 0)
+    {
+        write(fileDescriptor,buffer, length);
+    }
+    // else split message in chunks
+    else
+    {
+        for (long i = 0; i < quotient; i++)
+        {
+            write(fileDescriptor,buffer + bufferSize*i, bufferSize);
+            if(i + 1 == quotient)
+            {
+                long remainder = length - (quotient*bufferSize);
+                write(fileDescriptor, buffer + bufferSize*(i+1), remainder);
+            }
+        }
+    }
+
 }
