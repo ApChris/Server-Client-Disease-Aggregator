@@ -15,6 +15,7 @@ long Size_MyVector(myVector * vec)
 {
     return vec -> size;
 }
+
 long Length_MyVector(myVector * vec)
 {
     return vec -> length;
@@ -41,10 +42,10 @@ void * GetItem_MyVector(myVector * vec, long position)
     {
         return vec -> items[position];
     }
-    else
-    {
-        return NULL;
-    }
+    // else
+    // {
+    //     return NULL;
+    // }
 
 }
 
