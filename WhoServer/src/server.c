@@ -26,14 +26,15 @@ myVector * buffer = NULL;
 // sockets
 long sock;
 long newSock;
+long mainThreadSock;
 long optval = 1;
 
 long ReadFromSocket(long fileDescriptor, char * buffer);
 void WriteToSocket(long fileDescriptor, char * buffer);
-
+void * mainThreadJob(void * argp);
 int main(int argc, char const *argv[])
 {
-
+    // variables
     struct sockaddr_in server;
     uint64_t serverLength;
     struct sockaddr * serverPointer;
@@ -45,9 +46,15 @@ int main(int argc, char const *argv[])
     // For gethostbyname
     struct hostent * gtHName;
 
+    pthread_t * thread;
+
+    char message[MAXIMUMBUFFER] = "";
+    buffer = Init_MyVector();
+
     pthread_mutex_init(&mutex, NULL);
     pthread_cond_init(&condinationVariable, NULL);
 
+    // arguments
     if (argc != 9)                          // Check if we have !=9 arguments
     {
       printf("ERROR INPUT!!\nGive for example : ./whoServer -q 100 -s 200 -w 5 -b 100\n");
@@ -130,7 +137,7 @@ int main(int argc, char const *argv[])
     }
 
     printf("Server with pid = %ld\n",(long)getpid());
-    char message[MAXIMUMBUFFER] = "";
+
 
     clientPointer = (struct sockaddr *) &client;
     clientLength = sizeof client;
@@ -147,23 +154,142 @@ int main(int argc, char const *argv[])
             perror("Server: Gethostbyaddr has been failed:");
             exit(EXIT_FAILURE);
         }
-        printf("EDWW\n");
 
-        // strcpy(message,"Hello World");
-    ReadFromSocket(newSock,message);
-     printf("%s\n",message);
-    printf("EDWW\n");
-    ReadFromSocket(newSock,message);
-     printf("%s\n",message);
-    for (long i = 0; i < 3; i++)
+
+    // create main Thread
+    if((thread = (pthread_t *)malloc(sizeof(pthread_t))) == NULL)
     {
-
-
-        // printf("%s\n",message);
+        perror("Pthread malloc has been failed!:");
+        exit(EXIT_FAILURE);
     }
-    printf("EDWW\n");
+    else
+    {
+        pthread_create(&thread, NULL, mainThreadJob ,NULL);
+        PushBack_MyVector(buffer, thread);
+    }
+
+
+    // // create rest threads
+    // for (long i = 0; i < numThreads - 1; i++)
+    // {
+    //     if((thread = (pthread_t *)malloc(sizeof(pthread_t))) == NULL)
+    //     {
+    //         perror("Pthread malloc has been failed!:");
+    //         exit(EXIT_FAILURE);
+    //     }
+    //     else
+    //     {
+    //         pthread_create(&thread, NULL, ReadQueries ,NULL);
+    //         PushBack_MyVector(buffer, thread);
+    //     }
+    // }
+
+
+    // // ReadFromSocket(newSock,message);
+    // for (long i = 0; i < 8; i++)
+    // {
+    //
+    //     ReadFromSocket(newSock,message);
+    //     printf("%s\n",message);
+    // }
+
+
     return 0;
 }
+
+
+
+
+void * mainThreadJob(void * argp)
+{
+
+    // variables
+    struct sockaddr_in server;
+    uint64_t serverLength;
+    struct sockaddr * serverPointer;
+
+    struct sockaddr_in client;
+    struct sockaddr * clientPointer;
+    uint64_t clientLength;
+
+    char message[MAXIMUMBUFFER] = "";
+    // Create sockets
+    if((mainThreadSock = socket(PF_INET, SOCK_STREAM, 0)) == -1)
+    {
+        perror("Socket has been failed:");
+        exit(EXIT_FAILURE);
+    }
+
+    // Helps in manipulating options, prevents error such as address already in use
+    if(setsockopt(mainThreadSock, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(long)) < 0)
+    {
+        perror("Setsockopt has been failed:");
+        exit(EXIT_FAILURE);
+    }
+
+
+    // set server
+    server.sin_family = AF_INET;
+    server.sin_addr.s_addr = htonl(INADDR_ANY);
+    server.sin_port = htons(queryPortNum);
+    serverPointer = (struct sockaddr *)&server;
+    serverLength = sizeof(server);
+
+    if(bind(mainThreadSock, serverPointer, serverLength) < 0)
+    {
+        perror("Bind has been failed:");
+        exit(EXIT_FAILURE);
+    }
+
+    if(listen(mainThreadSock,5) < 0)
+    {
+        perror("Listen has been failed:");
+        exit(EXIT_FAILURE);
+    }
+
+    printf("Server with pid = %ld\n",(long)getpid());
+
+
+    clientPointer = (struct sockaddr *) &client;
+    clientLength = sizeof client;
+    if(listen(mainThreadSock,5) < 0)
+    {
+        perror("Listen has been failed:");
+        exit(EXIT_FAILURE);
+    }
+
+
+    for(;;)
+    {
+        if((newSock = accept(mainThreadSock, clientPointer, &clientLength)) == -1)
+        {
+            perror("Accept has been failed:");
+            exit(EXIT_FAILURE);
+        }
+        ReadFromSocket(newSock,message);
+
+        close(newSock);
+
+    }
+    pthread_mutex_lock(&mutex);
+    // WriteToSocket(sock, message);
+
+
+    WriteToSocket(sock, "Bye Bye");
+
+    pthread_mutex_unlock(&mutex);
+    printf("Client with pid = %ld is listening on port:%ld\n",(long)getpid(), servPort);
+
+    // Unblock threads blocked on a cond var
+    pthread_cond_signal(&condinationVariable);
+    close(newSocksock);
+
+}
+
+
+
+
+
 
 
 long ReadFromSocket(long fileDescriptor, char * buffer)
