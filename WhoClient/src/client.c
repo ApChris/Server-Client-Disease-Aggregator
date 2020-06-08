@@ -42,7 +42,8 @@ long ReadFromSocket(long fileDescriptor, char * buffer);
 
 // long ReadFromSocket(long fileDescriptor, char * message);
 void WriteToSocket(long fileDescriptor, char * message);
-void * mainThreadServer(void * argvp);
+void * SendQueryToServer(void * argvp);
+
 void ReadFile(const char * queryFile)
 {
     char * line = NULL;
@@ -134,23 +135,33 @@ int main(int argc, char const *argv[])
     threadsVector = Init_MyVector();
 
 
-    // create main thread
-    if(!(thread = (pthread_t *)malloc(sizeof(pthread_t))))
+    // create
+    for (long i = 0; i < LenOfList(&queries); i++)
     {
-        perror("Pthread malloc has been failed!:");
-        exit(EXIT_FAILURE);
-    }
-    else
-    {
-        pthread_create(thread, NULL, mainThreadServer ,NULL);
-        PushBack_MyVector(threadsVector,thread);
+        if((thread = (pthread_t *)malloc(sizeof(pthread_t))) == NULL)
+        {
+            perror("Pthread malloc has been failed!:");
+            exit(EXIT_FAILURE);
+        }
+        else
+        {
+
+            pthread_create(&thread, NULL, SendQueryToServer ,NULL);
+            PushBack_MyVector(threadsVector,thread);
+        }
     }
 
+
     pthread_cond_signal(&condinationVariable);
-    // 
-    // for (long i = 0; i < 1; i++) {
-    //     pthread_join(GetItem_MyVector(threadsVector,i), NULL);
-    // }
+
+    for (long i = 0; i < LenOfList(&queries); i++)
+    {
+        if(pthread_join(GetItem_MyVector(threadsVector,i), NULL))
+        {
+            perror("Client: perror has been failed:");
+            exit(EXIT_FAILURE);
+        }
+    }
     // TESTING PART
 
     // struct sockaddr_in server;
@@ -317,21 +328,17 @@ void WriteToSocket(long fileDescriptor, char * buffer)
 }
 
 
-
-
-//
-void * mainThreadServer(void * argp)
+void * SendQueryToServer(void * argp)
 {
+
     struct sockaddr_in server;
     uint64_t serverLength;
     struct sockaddr * serverPointer;
 
-    struct sockaddr_in client;
-    struct sockaddr * clientPointer;
-    uint64_t clientLength;
-
     // For gethostbyname
     struct hostent * gtHName;
+
+    char message[MAXIMUMBUFFER];
 
     // Create sockets
     if((sock = socket(PF_INET, SOCK_STREAM, 0)) == -1)
@@ -368,16 +375,17 @@ void * mainThreadServer(void * argp)
         perror("Client: connect has been failed:");
         exit(EXIT_FAILURE);
     }
-    printf("edw\n");
-    WriteToSocket(sock, "Hello fRom Client");
-    // printf("Client with pid: %ld -> %s\n",(long)getpid(),message);
+
+    pthread_mutex_lock(&mutex);
+    // WriteToSocket(sock, message);
+
 
     WriteToSocket(sock, "Bye Bye");
-    // printf("Client with pid: %ld -> %s\n",(long)getpid(),message);
 
+    pthread_mutex_unlock(&mutex);
     printf("Client with pid = %ld is listening on port:%ld\n",(long)getpid(), servPort);
 
-
-
-
+    // Unblock threads blocked on a cond var
+    pthread_cond_signal(&condinationVariable);
+    close(sock);
 }
