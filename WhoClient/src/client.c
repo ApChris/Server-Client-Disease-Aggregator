@@ -14,6 +14,7 @@
 
 #define MAXIMUMBUFFER 4096
 
+long indexNodeCounter = 0;
 // arguments
 char * queryFile;
 long numThreads;
@@ -23,6 +24,7 @@ char * servIP;
 // threads
 pthread_mutex_t mutex;
 pthread_cond_t condinationVariable;
+
 
 // MyVecors
 myVector * threadsVector = NULL;
@@ -38,10 +40,7 @@ long optval = 1;
 long bufferSize = 1;
 
 long ReadFromSocket(long fileDescriptor, char * buffer);
-// void WriteToSocket(long fileDescriptor, char * buffer);
-
-// long ReadFromSocket(long fileDescriptor, char * message);
-void WriteToSocket(long fileDescriptor, char * message);
+void WriteToSocket(long fileDescriptor, char * buffer);
 void * SendQueryToServer(void * argvp);
 
 void ReadFile(const char * queryFile)
@@ -80,8 +79,13 @@ void ReadFile(const char * queryFile)
 
 int main(int argc, char const *argv[])
 {
+    // arguments
+
     pthread_t * thread;
     char message[MAXBUFFER] = "";
+
+
+
     pthread_mutex_init(&mutex, NULL);
     pthread_cond_init(&condinationVariable, NULL);
 
@@ -130,13 +134,17 @@ int main(int argc, char const *argv[])
     // Read query file
     ReadFile(queryFile);
 
-
+    long threadsIDS[LenOfList(queries)];
+    for (long i = 0; i < LenOfList(queries); i++)
+    {
+        threadsIDS[i] = i;
+    }
     // Vector that holds threads pointers
     threadsVector = Init_MyVector();
 
 
     // create
-    for (long i = 0; i < LenOfList(&queries); i++)
+    for (long i = 0; i < LenOfList(queries); i++)
     {
         if((thread = (pthread_t *)malloc(sizeof(pthread_t))) == NULL)
         {
@@ -146,15 +154,14 @@ int main(int argc, char const *argv[])
         else
         {
 
-            pthread_create(&thread, NULL, SendQueryToServer ,NULL);
+            pthread_create(&thread, NULL, SendQueryToServer ,(void *)&threadsIDS[i]);
             PushBack_MyVector(threadsVector,thread);
         }
     }
 
+    sleep(5);
 
-    pthread_cond_signal(&condinationVariable);
-
-    for (long i = 0; i < LenOfList(&queries); i++)
+    for (long i = 0; i < LenOfList(queries); i++)
     {
         if(pthread_join(GetItem_MyVector(threadsVector,i), NULL))
         {
@@ -162,71 +169,8 @@ int main(int argc, char const *argv[])
             exit(EXIT_FAILURE);
         }
     }
-    // TESTING PART
-
-    // struct sockaddr_in server;
-    // uint64_t serverLength;
-    // struct sockaddr * serverPointer;
-    //
-    // struct sockaddr_in client;
-    // struct sockaddr * clientPointer;
-    // uint64_t clientLength;
-    //
-    // // For gethostbyname
-    // struct hostent * gtHName;
-    //
-    // // Create sockets
-    // if((sock = socket(PF_INET, SOCK_STREAM, 0)) == -1)
-    // {
-    //     perror("Client: Socket has been failed:");
-    //     exit(EXIT_FAILURE);
-    // }
-    //
-    // // Helps in manipulating options, prevents error such as address already in use
-    // if(setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(long)) < 0)
-    // {
-    //     perror("Client: Setsockopt has been failed:");
-    //     exit(EXIT_FAILURE);
-    // }
-    //
-    // if((gtHName = gethostbyname(servIP)) == NULL)
-    // {
-    //     perror("Client: gethostbyname has been failed:");
-    //     exit(EXIT_FAILURE);
-    // }
-    //
-    // // set server
-    // server.sin_family = AF_INET;
-    // bcopy((char *) gtHName -> h_addr, (char *) &server.sin_addr, gtHName -> h_length);
-    //
-    // // server.sin_addr.s_addr = htonl(INADDR_ANY);
-    // server.sin_port = htons(servPort);
-    // serverPointer = (struct sockaddr *)&server;
-    // serverLength = sizeof(server);
-    //
-    //
-    // if(connect(sock, serverPointer, serverLength) == -1)
-    // {
-    //     perror("Client: connect has been failed:");
-    //     exit(EXIT_FAILURE);
-    // }
-    // printf("edw\n");
-    // WriteToSocket(sock, "Hello fRom Client");
-    // // printf("Client with pid: %ld -> %s\n",(long)getpid(),message);
-    //
-    // WriteToSocket(sock, "Bye Bye");
-    // // printf("Client with pid: %ld -> %s\n",(long)getpid(),message);
-    //
-    // printf("Client with pid = %ld is listening on port:%ld\n",(long)getpid(), servPort);
-    //
-    //
-    //
 
 
-    // END OF TESTING PART
-
-
-    PrintList_Path(&queries);
     DeleteList_Path(&queries);
     free(queryFile);
     free(servIP);
@@ -237,9 +181,124 @@ int main(int argc, char const *argv[])
 
 
 
+void * SendQueryToServer(void * argp)
+{
+
+    long clientSock;
+    long *id = argp;
+
+    struct sockaddr_in server;
+    uint64_t serverLength;
+    struct sockaddr * serverPointer;
+
+    // For gethostbyname
+    struct hostent * gtHName;
+
+    char message[MAXIMUMBUFFER] = "";
+
+    // Create sockets
+    if((clientSock = socket(PF_INET, SOCK_STREAM, 0)) == -1)
+    {
+        perror("Client: Socket has been failed:");
+        exit(EXIT_FAILURE);
+    }
+
+    // Helps in manipulating options, prevents error such as address already in use
+    if(setsockopt(clientSock, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(long)) < 0)
+    {
+        perror("Client: Setsockopt has been failed:");
+        exit(EXIT_FAILURE);
+    }
+
+    if((gtHName = gethostbyname(servIP)) == NULL)
+    {
+        perror("Client: gethostbyname has been failed:");
+        exit(EXIT_FAILURE);
+    }
+
+    // set server
+    server.sin_family = AF_INET;
+    bcopy((char *) gtHName -> h_addr, (char *) &server.sin_addr, gtHName -> h_length);
+
+    // server.sin_addr.s_addr = htonl(INADDR_ANY);
+    server.sin_port = htons(servPort);
+    serverPointer = (struct sockaddr *)&server;
+    serverLength = sizeof(server);
+
+
+    if(connect(clientSock, serverPointer, serverLength) == -1)
+    {
+        perror("Client: connect has been failed:");
+        exit(EXIT_FAILURE);
+    }
+
+    pthread_mutex_lock(&mutex);
+
+    // char * currentQuery = GetValue_Path(queries,indexNodeCounter)
+    // WriteToSocket(clientSock, GetValue_Path(&queries,indexNodeCounter));
+    // printf("Client Thread = %ld -----> is sending -----> %s\n",(long)*id, GetValue_Path(&queries,indexNodeCounter));
+
+
+    sprintf(message, "Client Thread = %ld -----> is sending -----> %s",(long)*id, GetValue_Path(&queries,indexNodeCounter));
+    printf("---> %s  %d\n",message, strlen(message)+1);
+    WriteToSocket(clientSock, message);
+
+
+    // printf("%s\n",message);
+    // increase index from query list
+    indexNodeCounter++;
+
+    pthread_mutex_unlock(&mutex);
+
+
+    // Unblock threads blocked on a cond var
+    pthread_cond_signal(&condinationVariable);
+    close(clientSock);
+    pthread_exit(NULL);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 //
 long ReadFromSocket(long fileDescriptor, char * buffer)
 {
+
     long bytesNumber;
     long length = 0;
     long counter = 0;
@@ -295,6 +354,31 @@ long ReadFromSocket(long fileDescriptor, char * buffer)
     return counter;
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 void WriteToSocket(long fileDescriptor, char * buffer)
 {
     long length = strlen(buffer) + 1;
@@ -325,67 +409,4 @@ void WriteToSocket(long fileDescriptor, char * buffer)
         }
     }
 
-}
-
-
-void * SendQueryToServer(void * argp)
-{
-
-    struct sockaddr_in server;
-    uint64_t serverLength;
-    struct sockaddr * serverPointer;
-
-    // For gethostbyname
-    struct hostent * gtHName;
-
-    char message[MAXIMUMBUFFER];
-
-    // Create sockets
-    if((sock = socket(PF_INET, SOCK_STREAM, 0)) == -1)
-    {
-        perror("Client: Socket has been failed:");
-        exit(EXIT_FAILURE);
-    }
-
-    // Helps in manipulating options, prevents error such as address already in use
-    if(setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(long)) < 0)
-    {
-        perror("Client: Setsockopt has been failed:");
-        exit(EXIT_FAILURE);
-    }
-
-    if((gtHName = gethostbyname(servIP)) == NULL)
-    {
-        perror("Client: gethostbyname has been failed:");
-        exit(EXIT_FAILURE);
-    }
-
-    // set server
-    server.sin_family = AF_INET;
-    bcopy((char *) gtHName -> h_addr, (char *) &server.sin_addr, gtHName -> h_length);
-
-    // server.sin_addr.s_addr = htonl(INADDR_ANY);
-    server.sin_port = htons(servPort);
-    serverPointer = (struct sockaddr *)&server;
-    serverLength = sizeof(server);
-
-
-    if(connect(sock, serverPointer, serverLength) == -1)
-    {
-        perror("Client: connect has been failed:");
-        exit(EXIT_FAILURE);
-    }
-
-    pthread_mutex_lock(&mutex);
-    // WriteToSocket(sock, message);
-
-
-    WriteToSocket(sock, "Bye Bye");
-
-    pthread_mutex_unlock(&mutex);
-    printf("Client with pid = %ld is listening on port:%ld\n",(long)getpid(), servPort);
-
-    // Unblock threads blocked on a cond var
-    pthread_cond_signal(&condinationVariable);
-    close(sock);
 }
