@@ -9,6 +9,7 @@
 
 #define MAXIMUMBUFFER 4096
 
+long indexNodeCounter = 0;
 // arguments
 long queryPortNum;
 long statisticsPortNum;
@@ -20,7 +21,7 @@ pthread_mutex_t mutex;
 pthread_cond_t condinationVariable;
 
 // MyVecors
-myVector * threads = NULL;
+myVector * threadsVector = NULL;
 myVector * buffer = NULL;
 
 // sockets
@@ -33,6 +34,7 @@ long threadQueryPort;
 long ReadFromSocket(long fileDescriptor, char * buffer);
 void WriteToSocket(long fileDescriptor, char * buffer);
 void * mainThreadJob(void * argp);
+void * secondaryThreadJob(void * argp);
 int main(int argc, char const *argv[])
 {
     // // variables
@@ -50,7 +52,8 @@ int main(int argc, char const *argv[])
     pthread_t * thread;
     //
     // char message[MAXIMUMBUFFER] = "";
-    buffer = Init_MyVector();
+    threadsVector = Init_MyVector();
+    // buffer = Init_MyVector();
 
     pthread_mutex_init(&mutex, NULL);
     pthread_cond_init(&condinationVariable, NULL);
@@ -156,6 +159,12 @@ int main(int argc, char const *argv[])
     //         }
     //
 
+    // set Threads IDS
+    long threadsIDS[numThreads];
+    for (long i = 0; i < numThreads; i++)
+    {
+        threadsIDS[i] = i;
+    }
     //
     // create main Thread
     if((thread = (pthread_t *)malloc(sizeof(pthread_t))) == NULL)
@@ -165,15 +174,38 @@ int main(int argc, char const *argv[])
     }
     else
     {
-        pthread_create(&thread, NULL, mainThreadJob ,NULL);
-        PushBack_MyVector(buffer, thread);
+        pthread_create(&thread, NULL, mainThreadJob ,(void *)&threadsIDS[0]);
+        PushBack_MyVector(threadsVector, thread);
+
     }
     sleep(10);
-    if(pthread_join(thread, NULL))
+
+
+    for (long i = 1; i < numThreads; i++)
     {
-        perror("Client: perror has been failed:");
-        exit(EXIT_FAILURE);
+        if((thread = (pthread_t *)malloc(sizeof(pthread_t))) == NULL)
+        {
+            perror("Pthread malloc has been failed!:");
+            exit(EXIT_FAILURE);
+        }
+        else
+        {
+            pthread_create(&thread, NULL, secondaryThreadJob ,(void *)&threadsIDS[i]);
+
+            PushBack_MyVector(threadsVector, thread);
+
+        }
     }
+    pthread_cond_signal(&condinationVariable);
+    for (long i = 0; i < numThreads; i++)
+    {
+        if(pthread_join(GetItem_MyVector(threadsVector,i), NULL))
+        {
+            perror("Client: perror has been failed:");
+            exit(EXIT_FAILURE);
+        }
+    }
+    printf("END\n");
     while(1){}
     // for(;;)
     // {
@@ -249,7 +281,8 @@ int main(int argc, char const *argv[])
 
 void * mainThreadJob(void * argp)
 {
-    printf("mphka\n");
+    long *id = argp;
+    printf("Main Thread: %ld\n",*id);
     // variables
     struct sockaddr_in server;
     uint64_t serverLength;
@@ -265,7 +298,7 @@ void * mainThreadJob(void * argp)
     pthread_t * thread;
 
 
-    // buffer = Init_MyVector();
+    buffer = Init_MyVector();
 
     // Create sockets
     if((sock = socket(PF_INET, SOCK_STREAM, 0)) == -1)
@@ -324,20 +357,38 @@ void * mainThreadJob(void * argp)
             }
 
 
-        pthread_mutex_lock(&mutex);
-        long bytes = ReadFromSocket(newSock,message);
-        printf("%ld %s\n", bytes, message);
+        // pthread_mutex_lock(&mutex);
 
+        PushBack_MyVector(buffer,newSock);
 
-        pthread_mutex_unlock(&mutex);
-        sleep(1);
         printf("Accepted connection\n");
+        pthread_cond_signal(&condinationVariable);
+
     }
 }
 
 
+void * secondaryThreadJob(void * argp)
+{
+    // currentClientQueries++;
+    // if(currentClientQueries == totalClientQueries)
+    // {
+    //
+    // }
+    long *id = argp;
+    printf("Secondary Thread: %ld\n",*id);
+    pthread_mutex_lock(&mutex);
+    char message[MAXIMUMBUFFER] = "";
+    long bytes = ReadFromSocket(GetItem_MyVector(buffer,indexNodeCounter),message);
+    printf("%ld %ld %s\n", *id, GetItem_MyVector(buffer,indexNodeCounter), message);
 
 
+    WriteToSocket(GetItem_MyVector(buffer,indexNodeCounter),"Completed");
+
+    indexNodeCounter++;
+
+    pthread_mutex_unlock(&mutex);
+}
 
 
 
