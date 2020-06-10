@@ -82,7 +82,6 @@ int main(int argc, char const *argv[])
     // arguments
 
     pthread_t * thread;
-    char message[MAXBUFFER] = "";
 
 
 
@@ -128,7 +127,7 @@ int main(int argc, char const *argv[])
       }
     }
 
-    printf("%s %ld %ld %s\n",queryFile,numThreads,servPort,servIP);
+    printf("Arguments : %s %ld %ld %s\n",queryFile,numThreads,servPort,servIP);
 
 
     // Read query file
@@ -160,7 +159,7 @@ int main(int argc, char const *argv[])
     }
 
     sleep(5);
-
+    pthread_cond_signal(&condinationVariable);
     for (long i = 0; i < LenOfList(queries); i++)
     {
         if(pthread_join(GetItem_MyVector(threadsVector,i), NULL))
@@ -232,24 +231,27 @@ void * SendQueryToServer(void * argp)
         exit(EXIT_FAILURE);
     }
 
+    // lock mutex
     pthread_mutex_lock(&mutex);
 
-    // char * currentQuery = GetValue_Path(queries,indexNodeCounter)
-    // WriteToSocket(clientSock, GetValue_Path(&queries,indexNodeCounter));
-    // printf("Client Thread = %ld -----> is sending -----> %s\n",(long)*id, GetValue_Path(&queries,indexNodeCounter));
-
-
     sprintf(message, "Client Thread = %ld -----> is sending -----> %s",(long)*id, GetValue_Path(&queries,indexNodeCounter));
-    printf("---> %s  %d\n",message, strlen(message)+1);
+    printf("%s\n",message);
     WriteToSocket(clientSock, message);
 
 
-    // printf("%s\n",message);
     // increase index from query list
     indexNodeCounter++;
 
+    // unlock it
     pthread_mutex_unlock(&mutex);
+    strcpy(message,"\0");
+    ReadFromSocket(clientSock,message);
+    // printf("%s\n",message);
+    if(!strcmp(message,"Completed"))
+    {
+        printf("Client Thread %ld has been successfully completed \n", *id);
 
+    }
 
     // Unblock threads blocked on a cond var
     pthread_cond_signal(&condinationVariable);
