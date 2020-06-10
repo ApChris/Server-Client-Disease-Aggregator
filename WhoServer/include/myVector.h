@@ -20,6 +20,7 @@ void PushBack_MyVector(myVector * vec, void * item);
 long Size_MyVector(myVector * vec);
 long Length_MyVector(myVector * vec);
 void * GetItem_MyVector(myVector * vec, long position);
+void Print_MyVector(myVector * vec, char type);
 void UpdateItem_MyVector(myVector * vec, void * newItem, long position);
 void Deallocate_MyVector(myVector * vec);
 
