@@ -28,7 +28,7 @@ CC = gcc -pthread
 FLAGS = -Wextra -Wall -g -c
 
 TARGET = master
-TARGETworker = worker
+TARGETWORKER = worker
 TARGET2 = whoServer
 TARGET3 = whoClient
 
