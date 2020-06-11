@@ -11,6 +11,10 @@ extern PathNode * subDirectoriesPathList;
 extern bool flagEliminate;
 
 
+extern long servPort;
+extern char * servIP;
+
+
 void StartReadingFiles_Workers()
 {
     printf("\n\n\n\n\n\n\n\nStart Reading\n");
@@ -22,7 +26,7 @@ void StartReadingFiles_Workers()
     {
 
         // send
-        sprintf(message,"/ReadingFiles %ld %s",i,GetValue_Path(&subDirectoriesPathList,i));
+        sprintf(message,"/ReadingFiles %ld %s %ld %s",i,GetValue_Path(&subDirectoriesPathList,i), servPort, servIP);
 
         WriteToNamedPipe(GetValue(&writeNamedPipeList,i), message);
 
@@ -55,7 +59,7 @@ long CreateWorker(long processID)
 
     pid_t workerPid;
 
-    if( (workerArguments = (char **)malloc(sizeof(char *)*4)) == NULL)
+    if( (workerArguments = (char **)malloc(sizeof(char *)*6)) == NULL)
     {
         perror("Error: 1st malloc has been failed from CreateWorker function!");
         exit(EXIT_FAILURE);
@@ -95,9 +99,24 @@ long CreateWorker(long processID)
     sprintf(workerArguments[2], "%ld", bufferSize);
 
 
-    // Put Null because argv from workers need to know where to stop
-    workerArguments[3] = NULL;
+    if( (workerArguments[3] = (char *)malloc(sizeof(char)* PROCESSIDSTRING)) == NULL)
+    {
+        perror("Error: malloc has been failed from CreateWorker function!");
+        exit(EXIT_FAILURE);
+    }
 
+    sprintf(workerArguments[3], "%ld", servPort);
+
+    if( (workerArguments[4] = (char *)malloc(sizeof(char)* strlen(servIP) + 1)) == NULL)
+    {
+        perror("Error: malloc has been failed from CreateWorker function!");
+        exit(EXIT_FAILURE);
+    }
+    sprintf(workerArguments[4], "%s", servIP);
+
+    // Put Null because argv from workers need to know where to stop
+    workerArguments[5] = NULL;
+    // printf("--> %s %s %s %s %s\n",workerArguments[0],workerArguments[1],workerArguments[2],workerArguments[3],workerArguments[4]);
     // if child
     if( (workerPid = fork()) == 0)
     {
@@ -108,7 +127,7 @@ long CreateWorker(long processID)
     else
     {
         usleep(1);
-        for (long j = 0; j < 4; j++)
+        for (long j = 0; j < 6; j++)
         {
             free(workerArguments[j]);
         }
