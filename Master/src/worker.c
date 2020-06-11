@@ -59,6 +59,7 @@ void SigHandler()
 
             tok = strtok(NULL, delimiters);
             tok = strtok(NULL, delimiters);
+            tok = strtok(NULL, delimiters);
             path = (char *)malloc(sizeof(char)* strlen(tok));
             strcpy(path,tok);
 
@@ -132,6 +133,7 @@ int main(int argc, const char *argv[])
 
     if(argc > 0)
     {
+
         processID = atol(argv[0]);
         buffersize = atol(argv[2]);
         fileDescriptorR = OpenRead(processID);
