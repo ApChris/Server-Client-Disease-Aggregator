@@ -13,9 +13,12 @@ long flagEliminate = 0;
 PathNode * subDirectoriesPathList = NULL;
 
 
+long servPort;
+char * servIP;
+
 // examples
 // ./create_infiles.sh ../../etc/diseaseFile.txt ../../etc/countriesFile.txt input_dir 5 400
-// ./diseaseAggregator -w 5 -b 50 -i etc/input_dir
+// ./master -w 5 -b 50 -s localhost -p 6000 -i Master/etc/input_dir
 // /listCountries
 // /numPatientAdmissions COVID-2019 10-10-2010 10-10-2020
 // /diseaseFrequency COVID-2019 10-10-2010 10-10-2020
@@ -44,9 +47,9 @@ int main(int argc, char const *argv[])
     sigfillset(&(workerAction.sa_mask));
     sigaction(SIGCHLD, &workerAction, NULL);
 
-    if (argc != 7)                          // Check if we have !=7 arguments
+    if (argc != 11)                          // Check if we have !=11 arguments
     {
-      printf("ERROR INPUT!!\nGive for example : ./diseaseAggregator -w 4 -b 50 -i etc/input_dir\n");
+      printf("ERROR INPUT!!\nGive for example : ./master -w 4 -b 50 -s localhost -p 6000 -i etc/input_dir\n");
       return -1;
     }
 
@@ -60,6 +63,15 @@ int main(int argc, char const *argv[])
       {
          bufferSize = atoi(argv[i+1]);
 
+      }
+      else if(!strcmp(argv[i],"-s"))    // Path of serverIP
+      {
+          servIP = (char *)malloc(sizeof(char)*strlen(argv[i+1])+1);
+          strcpy(servIP,argv[i+1]);
+      }
+      else if(!strcmp(argv[i],"-p"))    // Path of input _dir
+      {
+          servPort = atoi(argv[i+1]);
       }
       else if(!strcmp(argv[i],"-i"))    // Path of input _dir
       {
@@ -92,7 +104,6 @@ int main(int argc, char const *argv[])
         strcpy(name, path);
         strcat(name, "/");
         strcat(name, directory -> d_name);
-
         PushNode_Path(&subDirectoriesPathList,name);
         free(name);
     }
@@ -125,7 +136,7 @@ int main(int argc, char const *argv[])
     {
         PushNode(&workersPidList,CreateWorker(i));
     }
-    PrintList(&workersPidList);
+    // PrintList(&workersPidList);
 
 
     // Open write and read for every worker
