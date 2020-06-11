@@ -12,7 +12,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-#define FIFOPATH "etc/fifo/myFIFO"
+#define FIFOPATH "Master/etc/fifo/myFIFO"
 
 #define MAXIMUMBUFFER 4096
 #define INITCOUNTER 0
