@@ -234,7 +234,7 @@ void * SendQueryToServer(void * argp)
     // lock mutex
     pthread_mutex_lock(&mutex);
 
-    sprintf(message, "Client Thread = %ld -----> is sending -----> %s",(long)*id, GetValue_Path(&queries,indexNodeCounter));
+    sprintf(message, "Client Thread = %ld -----> %s",(long)*id, GetValue_Path(&queries,indexNodeCounter));
     printf("%s\n",message);
     WriteToSocket(clientSock, message);
 

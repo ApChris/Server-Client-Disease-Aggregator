@@ -594,7 +594,7 @@ void numPatientDischarges(char * arguments)
 
 void ReadingFiles(char * path)
 {
-        printf("%s\n",path);
+    printf("%s\n",path);
     // Get country from subDirectoryPath
     char * country = (char *)malloc(1 + sizeof(char) * strlen(path));
     strcpy(country,path);

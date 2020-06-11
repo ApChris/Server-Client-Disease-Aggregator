@@ -10,6 +10,7 @@
 #define MAXIMUMBUFFER 4096
 
 long indexNodeCounter = 0;
+long totalClientQueries = 0;
 // arguments
 long queryPortNum;
 long statisticsPortNum;
@@ -342,13 +343,17 @@ void * mainThreadJob(void * argp)
 
     while(1)
     {
-
+        // if(totalClientQueries == indexNodeCounter)
+        // {
+        //     break;
+        // }
         char message[MAXIMUMBUFFER] = "";
         if ((newSock = accept(sock, clientPointer, &clientLength)) < 0)
         {
             perror("Accept has been failed!:");
             exit(EXIT_FAILURE);
         }
+
         if((gtHName = gethostbyaddr((char *) &client.sin_addr.s_addr, sizeof client
             . sin_addr . s_addr, client . sin_family)) == NULL)
             {
@@ -358,7 +363,8 @@ void * mainThreadJob(void * argp)
 
 
         // pthread_mutex_lock(&mutex);
-
+        // totalClientQueries++;
+        // pthread_mutex_unlock(&mutex);
         PushBack_MyVector(buffer,newSock);
 
         printf("Accepted connection\n");
@@ -371,16 +377,12 @@ void * mainThreadJob(void * argp)
 void * secondaryThreadJob(void * argp)
 {
     // currentClientQueries++;
-    // if(currentClientQueries == totalClientQueries)
-    // {
-    //
-    // }
+
     long *id = argp;
-    printf("Secondary Thread: %ld\n",*id);
     pthread_mutex_lock(&mutex);
     char message[MAXIMUMBUFFER] = "";
     long bytes = ReadFromSocket(GetItem_MyVector(buffer,indexNodeCounter),message);
-    printf("%ld %ld %s\n", *id, GetItem_MyVector(buffer,indexNodeCounter), message);
+    printf("Server Thread %ld received from ---> %s\n", GetItem_MyVector(buffer,indexNodeCounter), message);
 
 
     WriteToSocket(GetItem_MyVector(buffer,indexNodeCounter),"Completed");

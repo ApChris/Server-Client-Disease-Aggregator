@@ -5,7 +5,7 @@ extern long bufferSize;
 
 bool CreateNamedPipe_FIFO(long pid, char * flag)
 {
-    char name[50];
+    char name[80];
     if(!strcmp(flag,"main"))
     {
         sprintf(name, "%s_%ld_main", FIFOPATH, pid);
@@ -29,7 +29,7 @@ bool CreateNamedPipe_FIFO(long pid, char * flag)
 
 bool UnlinkNamedPipe_FIFO(long pid, char * flag)
 {
-    char name[50];
+    char name[80];
     if(!strcmp(flag,"main"))
     {
         sprintf(name, "%s_%ld_main", FIFOPATH, pid);
@@ -136,7 +136,6 @@ void WriteToNamedPipe(long fileDescriptor, char * buffer)
             }
         }
     }
-
 
 }
 
