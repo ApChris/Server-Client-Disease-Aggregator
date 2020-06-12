@@ -15,6 +15,7 @@ extern PathNode * countries;
 extern SumStatistics * generalStatistics;
 extern long buffersize;
 
+extern long workerSock;
 // This function is rensponsible for filling the hash with file's records
 SumStatistics * FillStructures(const char * patientRecordsFile, Hash * diseaseHash, Hash * patientHash, Date * date, char * country)
 {
@@ -741,12 +742,14 @@ void ReadingFiles(char * path)
                 flag++;
                 statistics = statistics -> next;
                 WriteToNamedPipe(fileDescriptorW,messageStatistics);
+                WriteToNamedPipe(workerSock,messageStatistics);
             }
             else
             {
                 sprintf(messageStatistics, "\n%s\nAge range 0-20 years: %ld cases\nAge range 21-40 years: %ld cases\nAge range 41-60 years: %ld cases\nAge range 65+ years: %ld cases\n",statistics -> diseaseID,statistics -> cases_0_20,statistics -> cases_21_40,statistics -> cases_41_60,statistics -> cases_over_60);
                 statistics = statistics -> next;
                 WriteToNamedPipe(fileDescriptorW,messageStatistics);
+                WriteToNamedPipe(workerSock,messageStatistics);
             }
 
         }

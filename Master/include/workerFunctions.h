@@ -4,6 +4,13 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <dirent.h>
+#include <sys/wait.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <pthread.h>
+#include <netdb.h>
+#include <netinet/in.h>
 #include "workerNamedPipesFifo.h"
 #include "list.h"
 #include "hash.h"

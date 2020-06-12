@@ -252,18 +252,31 @@ void * secondaryThreadJob(void * argp)
 {
 
     long *id = argp;
-    pthread_mutex_lock(&mutex);
-    char message[MAXIMUMBUFFER] = "";
-    long bytes = ReadFromSocket(GetItem_MyVector(bufferClient,indexOfVector), message);
-    printf("Server Thread %ld received from ---> %s\n", (long)GetItem_MyVector(bufferClient,indexOfVector), message);
 
-    bytes = ReadFromSocket(GetItem_MyVector(bufferWorker,indexOfVector), message);
-    printf("%s\n",message);
-    WriteToSocket(GetItem_MyVector(bufferClient,indexOfVector),"Completed");
+    if(indexOfVector < totalWorkers)
+    {
+        pthread_mutex_lock(&mutex);
+
+        char message[MAXIMUMBUFFER] = "";
+        bytes = ReadFromSocket(GetItem_MyVector(bufferWorker,indexOfVector), message);
+        printf("%s\n",message);
+        pthread_mutex_unlock(&mutex);
+    }
+
+    if(indexOfVector < totalClients)
+    {
+        long bytes = ReadFromSocket(GetItem_MyVector(bufferClient,indexOfVector), message);
+
+        printf("Server Thread %ld received from ---> %s\n", (long)GetItem_MyVector(bufferClient,indexOfVector), message);
+
+
+        WriteToSocket(GetItem_MyVector(bufferClient,indexOfVector),"Completed");
+
+    }
+
 
     indexOfVector++;
 
-    pthread_mutex_unlock(&mutex);
 }
 
 
