@@ -15,9 +15,14 @@ PathNode * countries = NULL;
 SumStatistics * generalStatistics;
 long buffersize;
 
+char * servIP;
+long servPort;
 
-
-
+// sockets
+long sock;
+long newSock;
+long optval = 1;
+long workerSock;
 
 void SigHandler()
 {
@@ -136,9 +141,63 @@ int main(int argc, const char *argv[])
 
         processID = atol(argv[0]);
         buffersize = atol(argv[2]);
+        servPort = atol(argv[3]);
+        if((servIP = (char *)malloc(sizeof(char) * strlen(argv[4]) + 1)) == NULL)
+        {
+            perror("WORKER, main , malloc has been failed");
+            exit(EXIT_FAILURE);
+        }
+        strcpy(servIP,argv[4]);
         fileDescriptorR = OpenRead(processID);
         fileDescriptorW = OpenWrite(processID);
     }
+
+
+    struct sockaddr_in server;
+    uint64_t serverLength;
+    struct sockaddr * serverPointer;
+
+    // For gethostbyname
+    struct hostent * gtHName;
+
+    char message[MAXIMUMBUFFER] = "";
+
+    // Create sockets
+    if((workerSock = socket(PF_INET, SOCK_STREAM, 0)) == -1)
+    {
+        perror("Client: Socket has been failed:");
+        exit(EXIT_FAILURE);
+    }
+
+    // Helps in manipulating options, prevents error such as address already in use
+    if(setsockopt(workerSock, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(long)) < 0)
+    {
+        perror("Client: Setsockopt has been failed:");
+        exit(EXIT_FAILURE);
+    }
+
+    if((gtHName = gethostbyname(servIP)) == NULL)
+    {
+        perror("Client: gethostbyname has been failed:");
+        exit(EXIT_FAILURE);
+    }
+
+    // set server
+    server.sin_family = AF_INET;
+    bcopy((char *) gtHName -> h_addr, (char *) &server.sin_addr, gtHName -> h_length);
+
+    // server.sin_addr.s_addr = htonl(INADDR_ANY);
+    server.sin_port = htons(servPort);
+    serverPointer = (struct sockaddr *)&server;
+    serverLength = sizeof(server);
+
+
+    if(connect(workerSock, serverPointer, serverLength) == -1)
+    {
+        perror("Worker: connect has been failed:");
+        exit(EXIT_FAILURE);
+    }
+
 
     for(;;)
     {
