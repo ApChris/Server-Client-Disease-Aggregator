@@ -1,60 +1,42 @@
 #include <stdio.h>
-#include <sys/wait.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <pthread.h>
-#include "../include/myVector.h"
 
 
-#define MAXIMUMBUFFER 4096
+#include "../include/serverFunctions.h"
 
-long indexNodeCounter = 0;
-long totalClientQueries = 0;
+
+
+
+
 // arguments
 long queryPortNum;
 long statisticsPortNum;
 long numThreads;
 long bufferSize;
 
-// threads
+// mutex conditional variable
 pthread_mutex_t mutex;
 pthread_cond_t condinationVariable;
 
-// MyVecors
+// MyVectors
 myVector * threadsVector = NULL;
-myVector * buffer = NULL;
+myVector * bufferClient = NULL;
+myVector * bufferWorker = NULL;
+long indexOfVector = 0;
 
-// sockets
-long sock;
-long newSock;
-long mainThreadSock;
-long optval = 1;
-long threadQueryPort;
+// extra variables
+long totalWorkers = 0;
+long totalClients = 0;
 
-long ReadFromSocket(long fileDescriptor, char * buffer);
-void WriteToSocket(long fileDescriptor, char * buffer);
-void * mainThreadJob(void * argp);
-void * secondaryThreadJob(void * argp);
+
+
+
 int main(int argc, char const *argv[])
 {
-    // // variables
-    // struct sockaddr_in server;
-    // uint64_t serverLength;
-    // struct sockaddr * serverPointer;
-    //
-    // struct sockaddr_in client;
-    // struct sockaddr * clientPointer;
-    // uint64_t clientLength;
-    //
-    // // For gethostbyname
-    // struct hostent * gtHName;
-    //
+
     pthread_t * thread;
-    //
-    // char message[MAXIMUMBUFFER] = "";
+
     threadsVector = Init_MyVector();
-    // buffer = Init_MyVector();
+
 
     pthread_mutex_init(&mutex, NULL);
     pthread_cond_init(&condinationVariable, NULL);
@@ -107,59 +89,6 @@ int main(int argc, char const *argv[])
 
     }
 
-    // // Create sockets
-    // if((sock = socket(PF_INET, SOCK_STREAM, 0)) == -1)
-    // {
-    //     perror("Socket has been failed:");
-    //     exit(EXIT_FAILURE);
-    // }
-    //
-    // // Helps in manipulating options, prevents error such as address already in use
-    // if(setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(long)) < 0)
-    // {
-    //     perror("Setsockopt has been failed:");
-    //     exit(EXIT_FAILURE);
-    // }
-    //
-    //
-    // // set server
-    // server.sin_family = AF_INET;
-    // server.sin_addr.s_addr = htonl(INADDR_ANY);
-    // server.sin_port = htons(queryPortNum);
-    // serverPointer = (struct sockaddr *)&server;
-    // serverLength = sizeof(server);
-    //
-    // if(bind(sock, serverPointer, serverLength) < 0)
-    // {
-    //     perror("Bind has been failed:");
-    //     exit(EXIT_FAILURE);
-    // }
-    //
-    // if(listen(sock,5) < 0)
-    // {
-    //     perror("Listen has been failed:");
-    //     exit(EXIT_FAILURE);
-    // }
-    //
-    // printf("Server with pid = %ld waiting on port %ld\n",(long)getpid(), queryPortNum);
-    //
-    //
-    //     clientPointer = (struct sockaddr *) &client;
-    //     clientLength = sizeof client;
-    //     if((newSock = accept(sock, clientPointer, &clientLength)) < 0)
-    //     {
-    //         perror("Server: accept has been failed:");
-    //         exit(EXIT_FAILURE);
-    //     }
-    //
-    //     if((gtHName = gethostbyaddr((char *) &client.sin_addr.s_addr, sizeof client
-    //         . sin_addr . s_addr, client . sin_family)) == NULL)
-    //         {
-    //             perror("Server: Gethostbyaddr has been failed:");
-    //             exit(EXIT_FAILURE);
-    //         }
-    //
-
     // set Threads IDS
     long threadsIDS[numThreads];
     for (long i = 0; i < numThreads; i++)
@@ -179,9 +108,13 @@ int main(int argc, char const *argv[])
         PushBack_MyVector(threadsVector, thread);
 
     }
-    sleep(10);
 
-
+    if(pthread_join(GetItem_MyVector(threadsVector,0), NULL))
+    {
+        perror("Client: perror has been failed:");
+        exit(EXIT_FAILURE);
+    }
+    printf("Rest threads are going to start!\n");
     for (long i = 1; i < numThreads; i++)
     {
         if((thread = (pthread_t *)malloc(sizeof(pthread_t))) == NULL)
@@ -198,7 +131,7 @@ int main(int argc, char const *argv[])
         }
     }
     pthread_cond_signal(&condinationVariable);
-    for (long i = 0; i < numThreads; i++)
+    for (long i = 1; i < numThreads; i++)
     {
         if(pthread_join(GetItem_MyVector(threadsVector,i), NULL))
         {
@@ -208,340 +141,6 @@ int main(int argc, char const *argv[])
     }
     printf("END\n");
     while(1){}
-    // for(;;)
-    // {
-    //     // Clients
-    //     clientPointer = (struct sockaddr *) &client;
-    //     clientLength = sizeof client;
-    //     if((newSock = accept(sock, clientPointer, &clientLength)) < 0)
-    //     {
-    //         perror("Server: accept has been failed:");
-    //         exit(EXIT_FAILURE);
-    //     }
-    //
-    //     if((gtHName = gethostbyaddr((char *) &client.sin_addr.s_addr, sizeof client
-    //         . sin_addr . s_addr, client . sin_family)) == NULL)
-    //         {
-    //             perror("Server: Gethostbyaddr has been failed:");
-    //             exit(EXIT_FAILURE);
-    //         }
-    //
-        // pthread_cond_signal(&condinationVariable);
-    // }
 
-    // // create rest threads
-    // for (long i = 0; i < numThreads - 1; i++)
-    // {
-    //     if((thread = (pthread_t *)malloc(sizeof(pthread_t))) == NULL)
-    //     {
-    //         perror("Pthread malloc has been failed!:");
-    //         exit(EXIT_FAILURE);
-    //     }
-    //     else
-    //     {
-    //         pthread_create(&thread, NULL, ReadQueries ,NULL);
-    //         PushBack_MyVector(buffer, thread);
-    //     }
-    // }
-
-
-    // ReadFromSocket(newSock,message);
-    // for (long i = 0; i < 8; i++)
-    // {
-    //
-    //     ReadFromSocket(newSock,message);
-    //     printf("%s\n",message);
-    // }
-    // ReadFromSocket(newSock,message);
-    // printf("%s\n",message);
-    //
-    // ReadFromSocket(newSock,message);
-    // printf("%s\n",message);
-    //
-    //
-    // while(1)
-    // {
-    //     if ((newSock = accept(sock, clientPointer, &clientLength)) < 0)
-    //     {
-    //         perror("Accept has been failed!:");
-    //         exit(EXIT_FAILURE);
-    //     }
-    //
-    //     ReadFromSocket(newSock,message);
-    //     printf("%s\n",message);
-    //         // perror_exit("accept");
-    //     // place(Buffer, newsock);
-    //     // pthread_cond_signal(&condinationVariable);
-    //     printf("Accepted connection\n");
-    // }
     return 0;
-}
-
-
-
-
-void * mainThreadJob(void * argp)
-{
-    long *id = argp;
-    printf("Main Thread: %ld\n",*id);
-    // variables
-    struct sockaddr_in server;
-    uint64_t serverLength;
-    struct sockaddr * serverPointer;
-
-    struct sockaddr_in client;
-    struct sockaddr * clientPointer;
-    uint64_t clientLength;
-
-    // For gethostbyname
-    struct hostent * gtHName;
-
-    pthread_t * thread;
-
-
-    buffer = Init_MyVector();
-
-    // Create sockets
-    if((sock = socket(PF_INET, SOCK_STREAM, 0)) == -1)
-    {
-        perror("Socket has been failed:");
-        exit(EXIT_FAILURE);
-    }
-
-    // Helps in manipulating options, prevents error such as address already in use
-    if(setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(long)) < 0)
-    {
-        perror("Setsockopt has been failed:");
-        exit(EXIT_FAILURE);
-    }
-
-
-    // set server
-    server.sin_family = AF_INET;
-    server.sin_addr.s_addr = htonl(INADDR_ANY);
-    server.sin_port = htons(queryPortNum);
-    serverPointer = (struct sockaddr *)&server;
-    serverLength = sizeof(server);
-
-    if(bind(sock, serverPointer, serverLength) < 0)
-    {
-        perror("Bind has been failed:");
-        exit(EXIT_FAILURE);
-    }
-
-    if(listen(sock,5) < 0)
-    {
-        perror("Listen has been failed:");
-        exit(EXIT_FAILURE);
-    }
-
-    printf("Server Thread = %ld waiting on port %ld\n",(long)getenv, queryPortNum);
-
-
-    clientPointer = (struct sockaddr *) &client;
-    clientLength = sizeof client;
-
-    while(1)
-    {
-        // if(totalClientQueries == indexNodeCounter)
-        // {
-        //     break;
-        // }
-        char message[MAXIMUMBUFFER] = "";
-        if ((newSock = accept(sock, clientPointer, &clientLength)) < 0)
-        {
-            perror("Accept has been failed!:");
-            exit(EXIT_FAILURE);
-        }
-
-        if((gtHName = gethostbyaddr((char *) &client.sin_addr.s_addr, sizeof client
-            . sin_addr . s_addr, client . sin_family)) == NULL)
-            {
-                perror("Server: Gethostbyaddr has been failed:");
-                exit(EXIT_FAILURE);
-            }
-
-
-        // pthread_mutex_lock(&mutex);
-        // totalClientQueries++;
-        // pthread_mutex_unlock(&mutex);
-        PushBack_MyVector(buffer,newSock);
-
-        printf("Accepted connection\n");
-        pthread_cond_signal(&condinationVariable);
-
-    }
-}
-
-
-void * secondaryThreadJob(void * argp)
-{
-    // currentClientQueries++;
-
-    long *id = argp;
-    pthread_mutex_lock(&mutex);
-    char message[MAXIMUMBUFFER] = "";
-    long bytes = ReadFromSocket(GetItem_MyVector(buffer,indexNodeCounter),message);
-    printf("Server Thread %ld received from ---> %s\n", GetItem_MyVector(buffer,indexNodeCounter), message);
-
-
-    WriteToSocket(GetItem_MyVector(buffer,indexNodeCounter),"Completed");
-
-    indexNodeCounter++;
-
-    pthread_mutex_unlock(&mutex);
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-long ReadFromSocket(long fileDescriptor, char * buffer)
-{
-    long bytesNumber;
-    long length = 0;
-    long counter = 0;
-
-    char finalBuffer[MAXIMUMBUFFER] = "";
-    char tempBuffer[MAXIMUMBUFFER] = "";
-
-    if(read(fileDescriptor, &length, sizeof(length)) > 0)
-    {
-
-
-        long quotient = length/bufferSize;
-        if(quotient == 0)
-        {
-            if( (bytesNumber = read(fileDescriptor,tempBuffer, length)) >= 0)
-            {
-                char chunkLength[length];
-                strcpy(chunkLength,tempBuffer);
-                strcat(finalBuffer,chunkLength);
-            }
-
-        }
-        else
-        {
-            // for every chunk
-            for (long i = 0; i < quotient; i++)
-            {
-                char chunk[bufferSize];
-
-                // read bufferSize bytes and append them to finalBuffer
-                if( (bytesNumber = read(fileDescriptor,tempBuffer, bufferSize)) >= 0)
-                {
-                    strcpy(chunk,tempBuffer);
-
-                    strcat(finalBuffer,chunk);
-
-                    // for last bytes
-                    if(i + 1 == quotient)
-                    {
-                        char lastChunk[bufferSize];
-                        long remainder = length - (quotient*bufferSize);
-                        bytesNumber = read(fileDescriptor, tempBuffer, remainder);
-
-                        strcpy(lastChunk,tempBuffer);
-                        strcat(finalBuffer,lastChunk);
-                    }
-                }
-            }
-        }
-        counter += length;
-
-    }
-    strcpy(buffer, finalBuffer);
-
-    return counter;
-}
-
-void WriteToSocket(long fileDescriptor, char * buffer)
-{
-    long length = strlen(buffer) + 1;
-
-    if(write(fileDescriptor, &length, sizeof(length)) < 0)
-    {
-        perror("Server:WriteToSocket has been failed:");
-        exit(EXIT_FAILURE);
-    }
-
-    // if bufferSize > length . just read length bytes
-    long quotient = length/bufferSize;
-    if(quotient == 0)
-    {
-        write(fileDescriptor,buffer, length);
-    }
-    // else split message in chunks
-    else
-    {
-        for (long i = 0; i < quotient; i++)
-        {
-            write(fileDescriptor,buffer + bufferSize*i, bufferSize);
-            if(i + 1 == quotient)
-            {
-                long remainder = length - (quotient*bufferSize);
-                write(fileDescriptor, buffer + bufferSize*(i+1), remainder);
-            }
-        }
-    }
-
 }
