@@ -22,10 +22,13 @@ myVector * threadsVector = NULL;
 myVector * bufferClient = NULL;
 myVector * bufferWorker = NULL;
 long indexOfVector = 0;
+long indexOfVectorC = 0;
 
 // extra variables
 long totalWorkers = 0;
+long currentWorkers = 0;
 long totalClients = 0;
+long currentClients = 0;
 
 
 
@@ -115,23 +118,27 @@ int main(int argc, char const *argv[])
         exit(EXIT_FAILURE);
     }
     printf("Rest threads are going to start!\n");
-    for (long i = 1; i < numThreads; i++)
+    for (long i = 1; i <= totalWorkers; i++)
     {
-        if((thread = (pthread_t *)malloc(sizeof(pthread_t))) == NULL)
-        {
-            perror("Pthread malloc has been failed!:");
-            exit(EXIT_FAILURE);
-        }
-        else
-        {
-            pthread_create(&thread, NULL, secondaryThreadJob ,(void *)&threadsIDS[i]);
+        // printf("totalWorkers %ld --> totalClients %ld %ld\n",totalWorkers,totalClients,i);
+        // if(currentWorkers < totalWorkers)
+        // {
+            if((thread = (pthread_t *)malloc(sizeof(pthread_t))) == NULL)
+            {
+                perror("Pthread malloc has been failed!:");
+                exit(EXIT_FAILURE);
+            }
+            else
+            {
+                pthread_create(&thread, NULL, WorkersThreadJob ,(void *)&threadsIDS[i]);
 
-            PushBack_MyVector(threadsVector, thread);
-
+                PushBack_MyVector(threadsVector, thread);
+                pthread_mutex_lock(&mutex);
+                currentWorkers++;
+                pthread_mutex_unlock(&mutex);
+            }
         }
-    }
-    pthread_cond_signal(&condinationVariable);
-    for (long i = 1; i < numThreads; i++)
+    for (long i = 1; i <= totalWorkers; i++)
     {
         if(pthread_join(GetItem_MyVector(threadsVector,i), NULL))
         {
@@ -139,6 +146,59 @@ int main(int argc, char const *argv[])
             exit(EXIT_FAILURE);
         }
     }
+
+        for (long i = totalWorkers + 1; i <= totalWorkers + totalClients; i++)
+        {
+            // if(currentClients == totalClients)
+            // {
+            //     break;
+            // }
+            // else
+            // {
+                if((thread = (pthread_t *)malloc(sizeof(pthread_t))) == NULL)
+                {
+                    perror("Pthread malloc has been failed!:");
+                    exit(EXIT_FAILURE);
+                }
+                else
+                {
+                    pthread_create(&thread, NULL, ClientsThreadJob ,(void *)&threadsIDS[i]);
+
+                    PushBack_MyVector(threadsVector, thread);
+                    pthread_mutex_lock(&mutex);
+                    currentClients++;
+                    pthread_mutex_unlock(&mutex);
+                }
+            // }
+        }
+
+        for (long i = totalWorkers + 1; i <= totalWorkers + totalClients; i++)
+        {
+            if(pthread_join(GetItem_MyVector(threadsVector,i), NULL))
+            {
+                perror("Client: perror has been failed:");
+                exit(EXIT_FAILURE);
+            }
+        }
+
+        // }
+        // else
+        // {
+
+
+
+        // }
+
+    // }
+    // pthread_cond_signal(&condinationVariable);
+    // for (long i = 1; i < numThreads; i++)
+    // {
+    //     if(pthread_join(GetItem_MyVector(threadsVector,i), NULL))
+    //     {
+    //         perror("Client: perror has been failed:");
+    //         exit(EXIT_FAILURE);
+    //     }
+    // }
     printf("END\n");
     while(1){}
 
