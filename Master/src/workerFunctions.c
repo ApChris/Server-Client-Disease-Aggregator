@@ -605,8 +605,10 @@ void ReadingFiles(char * path)
     tok = strtok(country, delimiters);
     tok = strtok(NULL, delimiters);
     tok = strtok(NULL, delimiters);
+    tok = strtok(NULL, delimiters);
     strcpy(country,tok);
     PushNode_Path(&countries,country);
+
     Date * datesArray = malloc(sizeof(*datesArray));
 
     struct dirent * subDirectory;
@@ -659,7 +661,6 @@ void ReadingFiles(char * path)
         datesArray[counter].month = atol(tok);
         tok = strtok(NULL, delimiters);
         datesArray[counter].year = atol(tok);
-
         counter++;
         free(currentDate);
 
@@ -716,7 +717,7 @@ void ReadingFiles(char * path)
         tok = strtok(currentDate, delimiters);
         tok = strtok(NULL, delimiters);
         tok = strtok(NULL, delimiters);
-
+        tok = strtok(NULL, delimiters);
         // day
         tok = strtok(NULL, delimiters);
 
@@ -730,7 +731,7 @@ void ReadingFiles(char * path)
         SumStatistics * statistics = FillStructures(GetValue_Path(&filesPathList, i), diseaseHash, patientHash, cdate, country);
 
         char messageStatistics[MAXBUFFER];
-
+        printf("%ld %ld %ld\n", cdate -> day, cdate -> month, cdate -> year);
         long flag = 0;
         while(statistics != NULL)
         {
@@ -741,15 +742,28 @@ void ReadingFiles(char * path)
                 sprintf(messageStatistics, "\n%ld-%ld-%ld\n%s\n%s\nAge range 0-20 years: %ld cases\nAge range 21-40 years: %ld cases\nAge range 41-60 years: %ld cases\nAge range 65+ years: %ld cases\n",cdate -> day, cdate -> month, cdate -> year, country, statistics -> diseaseID,statistics -> cases_0_20,statistics -> cases_21_40,statistics -> cases_41_60,statistics -> cases_over_60);
                 flag++;
                 statistics = statistics -> next;
+                // WriteToNamedPipe(workerSock,messageStatistics);
+                if (write(workerSock, messageStatistics, strlen(messageStatistics)) < 0)
+                {
+                    perror("worker write");
+                    exit(EXIT_FAILURE);
+                }
                 WriteToNamedPipe(fileDescriptorW,messageStatistics);
-                WriteToNamedPipe(workerSock,messageStatistics);
+
             }
             else
             {
                 sprintf(messageStatistics, "\n%s\nAge range 0-20 years: %ld cases\nAge range 21-40 years: %ld cases\nAge range 41-60 years: %ld cases\nAge range 65+ years: %ld cases\n",statistics -> diseaseID,statistics -> cases_0_20,statistics -> cases_21_40,statistics -> cases_41_60,statistics -> cases_over_60);
                 statistics = statistics -> next;
+
+                if (write(workerSock, messageStatistics, strlen(messageStatistics)) < 0)
+                {
+                    perror("worker write");
+                    exit(EXIT_FAILURE);
+                }
+
                 WriteToNamedPipe(fileDescriptorW,messageStatistics);
-                WriteToNamedPipe(workerSock,messageStatistics);
+
             }
 
         }
