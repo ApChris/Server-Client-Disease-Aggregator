@@ -14,10 +14,13 @@ extern pthread_cond_t condinationVariable;
 extern myVector * bufferClient;
 extern myVector * bufferWorker;
 extern long indexOfVector;
+extern long indexOfVectorC;
 
 // extra variables
 extern long totalWorkers;
+extern long currentWorkers;
 extern long totalClients;
+extern long currentClients;
 
 // sockets
 long sock;
@@ -140,7 +143,7 @@ void * mainThreadJob(void * argp)
         FD_ZERO(&set);
         FD_SET(sockStat, &set);
 
-        timeOut.tv_sec = 10;
+        timeOut.tv_sec = 3;
         timeOut.tv_usec = 0;
 
         rv = select(sockStat + 1, &set, NULL, NULL, &timeOut);
@@ -182,7 +185,7 @@ void * mainThreadJob(void * argp)
                 }
                 printf("Accepted Worker connection\n");
                 PushBack_MyVector(bufferWorker,newSockStat);
-            totalWorkers++;
+                totalWorkers++;
         }
 
     }
@@ -193,7 +196,7 @@ void * mainThreadJob(void * argp)
         FD_ZERO(&set);
         FD_SET(sock, &set);
 
-        timeOut.tv_sec = 10;
+        timeOut.tv_sec = 3;
         timeOut.tv_usec = 0;
 
         rv = select(sock + 1, &set, NULL, NULL, &timeOut);
@@ -248,36 +251,47 @@ void * mainThreadJob(void * argp)
 }
 
 
-void * secondaryThreadJob(void * argp)
+
+void * WorkersThreadJob(void * argp)
 {
 
     long *id = argp;
 
-    if(indexOfVector < totalWorkers)
-    {
-        pthread_mutex_lock(&mutex);
+    pthread_mutex_lock(&mutex);
 
-        char message[MAXIMUMBUFFER] = "";
-        bytes = ReadFromSocket(GetItem_MyVector(bufferWorker,indexOfVector), message);
-        printf("%s\n",message);
-        pthread_mutex_unlock(&mutex);
-    }
+    char message[MAXIMUMBUFFER] = "";
+    long bytes = read(GetItem_MyVector(bufferWorker,indexOfVector), message, MAXIMUMBUFFER);
 
-    if(indexOfVector < totalClients)
-    {
-        long bytes = ReadFromSocket(GetItem_MyVector(bufferClient,indexOfVector), message);
-
-        printf("Server Thread %ld received from ---> %s\n", (long)GetItem_MyVector(bufferClient,indexOfVector), message);
-
-
-        WriteToSocket(GetItem_MyVector(bufferClient,indexOfVector),"Completed");
-
-    }
-
-
+    message[bytes] = '\0';
+    printf("%s\n",message, bytes);
     indexOfVector++;
+    pthread_mutex_unlock(&mutex);
+    pthread_exit(NULL);
 
 }
+
+void * ClientsThreadJob(void * argp)
+{
+
+    long * id = argp;
+    char message[MAXIMUMBUFFER] = "";
+    pthread_mutex_lock(&mutex);
+    printf("-----------------------------------------------> edwww\n");
+    long bytes = read(GetItem_MyVector(bufferClient,indexOfVectorC), message, MAXIMUMBUFFER);
+
+    message[bytes] = '\0';
+
+    printf("Server Thread %ld received from ---> %s\n", (long)GetItem_MyVector(bufferClient,indexOfVectorC), message);
+
+    write(GetItem_MyVector(bufferClient,indexOfVectorC), "Completed");
+
+    indexOfVectorC++;
+    pthread_mutex_unlock(&mutex);
+    pthread_exit(NULL);
+}
+
+
+
 
 
 
