@@ -18,6 +18,6 @@
 long ReadFromSocket(long fileDescriptor, char * buffer);
 void WriteToSocket(long fileDescriptor, char * buffer);
 void * mainThreadJob(void * argp);
-void * secondaryThreadJob(void * argp);
-
+void * WorkersThreadJob(void * argp);
+void * ClientsThreadJob(void * argp);
 #endif
