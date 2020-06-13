@@ -236,7 +236,8 @@ void * SendQueryToServer(void * argp)
 
     sprintf(message, "Client Thread = %ld -----> %s",(long)*id, GetValue_Path(&queries,indexNodeCounter));
     printf("%s\n",message);
-    WriteToSocket(clientSock, message);
+    // WriteToSocket(clientSock, message);
+    write(clientSock, message, MAXIMUMBUFFER);
 
 
     // increase index from query list
@@ -245,7 +246,10 @@ void * SendQueryToServer(void * argp)
     // unlock it
     pthread_mutex_unlock(&mutex);
     strcpy(message,"\0");
-    ReadFromSocket(clientSock,message);
+    // ReadFromSocket(clientSock,message);
+    long bytes = read(clientSock, message, MAXIMUMBUFFER);
+
+    message[bytes] = '\0';
     // printf("%s\n",message);
     if(!strcmp(message,"Completed"))
     {
