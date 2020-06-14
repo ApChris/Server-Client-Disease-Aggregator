@@ -40,12 +40,12 @@ void SigHandler()
         {
             // Preprocess arguments that are going to be send
             char * path;
-            char * procID;
+            // char * procID;
             char delimiters[] = " \n\t\r\v\f\n:,/.><[]{}|=+*@#$-";
             char * tok = NULL;
             tok = strtok(arguments, delimiters);
-            procID = (char *)malloc(sizeof(char)* strlen(tok));
-            strcpy(procID,tok);
+            // procID = (char *)malloc(sizeof(char)* strlen(tok));
+            // strcpy(procID,tok);
             tok = strtok(NULL, " \n");
             path = (char *)malloc(sizeof(char)* strlen(tok));
             strcpy(path,tok);
@@ -105,6 +105,20 @@ void SigHandler()
         else if(!strcmp(command, "/reCreateWorker"))
         {
             reCreateWorker();
+        }
+        else if(!strcmp(command, "/ReadRequests"))
+        {
+            char * path;
+            // char * procID;
+            char delimiters[] = " \n\t\r\v\f\n:,/.><[]{}|=+*@#$-";
+            char * tok = NULL;
+            tok = strtok(arguments, delimiters);
+            // procID = (char *)malloc(sizeof(char)* strlen(tok));
+            // strcpy(procID,tok);
+            tok = strtok(NULL, " \n");
+            path = (char *)malloc(sizeof(char)* strlen(tok));
+            strcpy(path,tok);
+            ReadRequests(path);
         }
         else
         {

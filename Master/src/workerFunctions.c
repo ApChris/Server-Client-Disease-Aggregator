@@ -812,3 +812,15 @@ void Elimination()
 
     exit(0);
 }
+
+
+
+
+
+
+
+void ReadRequests(char * path)
+{
+    char message[MAXIMUMBUFFER] = "";
+    printf("%s\n",path);
+}
