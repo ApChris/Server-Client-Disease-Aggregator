@@ -27,6 +27,8 @@ void searchPatientRecord(char * recordID);
 void numPatientAdmissions(char * arguments);
 void numPatientDischarges(char * arguments);
 void ReadingFiles(char * path);
+
+void ReadRequests(char * path);
 void Elimination();
 
 #endif

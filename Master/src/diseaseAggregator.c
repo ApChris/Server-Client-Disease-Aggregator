@@ -155,12 +155,12 @@ int main(int argc, char const *argv[])
     printf("Waiting!!!\n");
     sleep(1);
 
-    StartReadingFiles_Workers();
+    StartReadingFiles();
 
     printf("Requests\n");
 
-    while(!Read_Requests()){}
-
+    // while(!Read_Requests()){}
+    SetWorkersForRequests();
 
     return 0;
 }
