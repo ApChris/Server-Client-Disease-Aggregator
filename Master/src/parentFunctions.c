@@ -15,7 +15,7 @@ extern long servPort;
 extern char * servIP;
 
 
-void StartReadingFiles_Workers()
+void StartReadingFiles()
 {
     printf("\n\n\n\n\n\n\n\nStart Reading\n");
     char message[MAXIMUMBUFFER];
@@ -50,6 +50,28 @@ void StartReadingFiles_Workers()
         printf("--------------------------------------\n");
     }
 
+}
+
+
+
+void SetWorkersForRequests()
+{
+    char message[MAXIMUMBUFFER];
+
+
+    // for every worker
+    for (long i = 0; i < totalWorkers; i++)
+    {
+        // send
+        sprintf(message,"/ReadRequests %ld %s %ld %s",i,GetValue_Path(&subDirectoriesPathList,i), servPort, servIP);
+
+        WriteToNamedPipe(GetValue(&writeNamedPipeList,i), message);
+
+        kill(GetValue(&workersPidList,i),SIGUSR1);
+
+
+    }
+    
 }
 
 long CreateWorker(long processID)

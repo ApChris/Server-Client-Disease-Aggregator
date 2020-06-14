@@ -14,5 +14,6 @@
 long CreateWorker(long processID);
 void Elimination();
 void ReCreateWorker();
-void StartReadingFiles_Workers();
+void StartReadingFiles();
+void SetWorkersForRequests();
 #endif
