@@ -118,6 +118,7 @@ void SigHandler()
             tok = strtok(NULL, " \n");
             path = (char *)malloc(sizeof(char)* strlen(tok));
             strcpy(path,tok);
+            // printf("%s\n",path);
             ReadRequests(path);
         }
         else
