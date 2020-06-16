@@ -30,7 +30,7 @@ long currentWorkers = 0;
 long totalClients = 0;
 long currentClients = 0;
 
-
+PathNode * queries = NULL;
 
 
 int main(int argc, char const *argv[])
@@ -149,12 +149,6 @@ int main(int argc, char const *argv[])
 
         for (long i = totalWorkers + 1; i <= totalWorkers + totalClients; i++)
         {
-            // if(currentClients == totalClients)
-            // {
-            //     break;
-            // }
-            // else
-            // {
                 if((thread = (pthread_t *)malloc(sizeof(pthread_t))) == NULL)
                 {
                     perror("Pthread malloc has been failed!:");
@@ -169,7 +163,6 @@ int main(int argc, char const *argv[])
                     currentClients++;
                     pthread_mutex_unlock(&mutex);
                 }
-            // }
         }
 
         for (long i = totalWorkers + 1; i <= totalWorkers + totalClients; i++)
@@ -181,6 +174,30 @@ int main(int argc, char const *argv[])
             }
         }
 
+        // long quotient = length/bufferSize;
+        // if(quotient == 0)
+        // {
+        //     write(fileDescriptor,buffer, length);
+        // }
+        // // else split message in chunks
+        // else
+        // {
+        //     for (long i = 0; i < quotient; i++)
+        //     {
+        //         write(fileDescriptor,buffer + bufferSize*i, bufferSize);
+        //         if(i + 1 == quotient)
+        //         {
+        //             long remainder = length - (quotient*bufferSize);
+        // for (long i = totalWorkers + 1; i <= totalWorkers + totalClients; i++)
+        // {
+        //     write(GetItem_MyVector(bufferWorker,i), "Completed");
+        //
+        // }
+
+        // for (long i = 0; i < count; i++)
+        // {
+        //
+        // }
         // }
         // else
         // {
@@ -200,6 +217,63 @@ int main(int argc, char const *argv[])
     //     }
     // }
     printf("END\n");
+    long quotient = totalClients/totalWorkers;
+    long queriesPerWorker[totalWorkers];
+    long index = 0;
+    if(quotient == 0)
+    {
+        // if we have more workers than clients
+    }
+    else
+    {
+        for (long i = 0; i < totalWorkers; i++)
+        {
+            queriesPerWorker[i] = quotient;
+            if(i + 1 == totalWorkers)
+            {
+                long remainder = totalClients - (quotient*totalWorkers);
+                queriesPerWorker[i] = quotient + remainder;
+            }
+        }
+    }
+    PrintList_Path(&queries);
+    for (long i = 0; i < totalWorkers; i++)
+    {
+
+
+        char finalMessage[MAXIMUMBUFFER] = "";
+
+        for (long j = 0; j < queriesPerWorker[i]; j++)
+        {
+
+            char message[MAXIMUMBUFFER] = "";
+            sprintf(message, "%s", GetValue_Path(&queries,index));
+            char * tok = strtok(message, ">");
+            tok = strtok(NULL,"\n");
+            if(j == 0)
+            {
+                sprintf(finalMessage,"%s\n",tok);
+            }
+            else
+            {
+                strcat(finalMessage,tok);
+                strcat(finalMessage,"\n");
+
+            }
+            index++;
+        }
+        printf("%s\n",finalMessage);
+        // sprintf(message, "%s", GetValue_Path(&queries,i));
+        // char * tok = strtok(message, ">");
+        // tok = strtok(NULL,"\n");
+        // strcpy(finalMessage,tok);
+        // printf("%s\n", tok);
+        // sprintf(message,"Heelo from %ld \n", i);
+        write(GetItem_MyVector(bufferWorker,i), finalMessage ,strlen(finalMessage));
+    }
+
+    // write(GetItem_MyVector(bufferWorker,randomPick), message,strlen(message));
+    // printf("%s\n",message);
     while(1){}
 
     return 0;
