@@ -826,44 +826,58 @@ void ReadRequests(char * path)
     fd_set set;
     struct timeval timeOut;
     long rv;
+    long lines = 0;
 
-    while(1)
+    if (read(workerSock, message, MAXIMUMBUFFER) < 0)
     {
-        FD_ZERO(&set);
-        FD_SET(workerSock, &set);
-
-        timeOut.tv_sec = 10;
-        timeOut.tv_usec = 0;
-
-        rv = select(workerSock + 1, &set, NULL, NULL, &timeOut);
-
-        if(rv == -1)
+        perror("worker write");
+        exit(EXIT_FAILURE);
+    }
+    printf("--------Worker: %ld-------\n%s\n", processID,message);
+    for (long i = 0; i < strlen(message); i++)
+    {
+        if(message[i] == '\n')
         {
-            perror("Error select");
-            exit(EXIT_FAILURE);
-        }
-        else if(rv == 0)
-        {
-            // if(totalWorkers == 0)
-            // {
-                printf("--> 10 seconds have passed -> Still listening for Workers\n");
-            // }
-            // else
-            // {
-            //     printf("--> 10 seconds have passed -> Thread is moving on Clients\n");
-            //     break;
-            //
-            // }
-        }
-        else
-        {
-            if (read(workerSock, message, MAXIMUMBUFFER) < 0)
-            {
-                perror("worker write");
-                exit(EXIT_FAILURE);
-            }
-            printf("%s\n", message);
+            lines++;
         }
     }
+    for (long i = 0; i < lines; i++)
+    {
+
+    }
+    printf("%ld\n",lines);
+    // while(1)
+    // {
+    //     FD_ZERO(&set);
+    //     FD_SET(workerSock, &set);
+    //
+    //     timeOut.tv_sec = 10;
+    //     timeOut.tv_usec = 0;
+    //
+    //     rv = select(workerSock + 1, &set, NULL, NULL, &timeOut);
+    //
+    //     if(rv == -1)
+    //     {
+    //         perror("Error select");
+    //         exit(EXIT_FAILURE);
+    //     }
+    //     else if(rv == 0)
+    //     {
+    //         // if(totalWorkers == 0)
+    //         // {
+    //             printf("--> 10 seconds have passed -> Still listening for Workers\n");
+    //         // }
+    //         // else
+    //         // {
+    //         //     printf("--> 10 seconds have passed -> Thread is moving on Clients\n");
+    //         //     break;
+    //         //
+    //         // }
+    //     }
+    //     else
+    //     {
+    //
+    //     }
+    // }
 
 }
