@@ -15,7 +15,8 @@ OBJSWORKER = 	Master/build/worker.o \
 
 OBJS2 = WhoServer/build/server.o \
 		WhoServer/build/myVector.o \
-		WhoServer/build/serverFunctions.o
+		WhoServer/build/serverFunctions.o \
+		Master/build/list.o \
 
 
 
