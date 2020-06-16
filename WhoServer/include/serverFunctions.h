@@ -10,8 +10,9 @@
 #include <netinet/in.h>
 #include <pthread.h>
 #include <time.h>
-
+#include <stdbool.h>
 #include "../include/myVector.h"
+#include "../../Master/include/list.h"
 
 #define MAXIMUMBUFFER 4096
 
