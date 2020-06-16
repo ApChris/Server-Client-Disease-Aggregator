@@ -22,6 +22,8 @@ extern long currentWorkers;
 extern long totalClients;
 extern long currentClients;
 
+extern PathNode * queries;
+
 // sockets
 long sock;
 long newSock;
@@ -272,7 +274,6 @@ void * WorkersThreadJob(void * argp)
 
 void * ClientsThreadJob(void * argp)
 {
-
     long * id = argp;
     char message[MAXIMUMBUFFER] = "";
     pthread_mutex_lock(&mutex);
@@ -281,17 +282,17 @@ void * ClientsThreadJob(void * argp)
 
     message[bytes] = '\0';
 
-    printf("Server Thread %ld received from ---> %s\n", (long)GetItem_MyVector(bufferClient,indexOfVectorC), message);
-
-    write(GetItem_MyVector(bufferClient,indexOfVectorC), "Completed");
-
+    printf("Server Thread %ld received from --->%s\n", (long)GetItem_MyVector(bufferClient,indexOfVectorC), message);
+    PushNode_Path(&queries,message);
+    write(GetItem_MyVector(bufferClient,indexOfVectorC), "Completed", strlen("Completed\0"));
+    // srand(time(NULL));
+    // long randomPick = rand()%totalWorkers;
+    // write(GetItem_MyVector(bufferWorker,randomPick), message,strlen(message));
+    // printf("%s\n",message);
     indexOfVectorC++;
     pthread_mutex_unlock(&mutex);
     pthread_exit(NULL);
 }
-
-
-
 
 
 

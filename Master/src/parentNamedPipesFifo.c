@@ -136,7 +136,6 @@ void WriteToNamedPipe(long fileDescriptor, char * buffer)
             }
         }
     }
-
 }
 
 long OpenRead(long pid)
