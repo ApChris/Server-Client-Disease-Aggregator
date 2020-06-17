@@ -16,8 +16,8 @@ OBJSWORKER = 	Master/build/worker.o \
 OBJS2 = WhoServer/build/server.o \
 		WhoServer/build/myVector.o \
 		WhoServer/build/serverFunctions.o \
+		WhoServer/build/requestsFromServer.o \
 		Master/build/list.o \
-
 
 
 OBJS3 = WhoClient/build/client.o \
@@ -88,6 +88,10 @@ WhoServer/build/myVector.o: WhoServer/src/myVector.c
 
 WhoServer/build/serverFunctions.o: WhoServer/src/serverFunctions.c
 	$(CC) $(FLAGS) $< -o $@
+
+WhoServer/build/requestsFromServer.o: WhoServer/src/requestsFromServer.c
+	$(CC) $(FLAGS) $< -o $@
+
 
 # CLIENT
 WhoClient/build/client.o: WhoClient/src/client.c
