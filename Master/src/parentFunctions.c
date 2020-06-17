@@ -29,7 +29,7 @@ void StartReadingFiles()
         sprintf(message,"/ReadingFiles %ld %s %ld %s",i,GetValue_Path(&subDirectoriesPathList,i), servPort, servIP);
 
         WriteToNamedPipe(GetValue(&writeNamedPipeList,i), message);
-
+        // write(GetValue(&writeNamedPipeList,i), message,strlen(message));
         kill(GetValue(&workersPidList,i),SIGUSR1);
 
 
@@ -66,12 +66,12 @@ void SetWorkersForRequests()
         sprintf(message,"/ReadRequests %ld %s %ld %s",i,GetValue_Path(&subDirectoriesPathList,i), servPort, servIP);
 
         WriteToNamedPipe(GetValue(&writeNamedPipeList,i), message);
-
+        // write(GetValue(&writeNamedPipeList,i), message,strlen(message));
         kill(GetValue(&workersPidList,i),SIGUSR1);
 
 
     }
-    
+
 }
 
 long CreateWorker(long processID)

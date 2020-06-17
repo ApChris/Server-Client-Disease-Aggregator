@@ -100,7 +100,6 @@ void Request_2(char * tok)
 
         for (long i = 0; i < totalWorkers; i++)
         {
-
             sprintf(message,"/diseaseFrequency %s %ld-%ld-%ld %ld-%ld-%ld",diseaseID, date1 -> day, date1 -> month, date1 -> year,date2 -> day, date2 -> month, date2 -> year);
 
             WriteToNamedPipe(GetValue(&writeNamedPipeList,i), message);
@@ -129,9 +128,8 @@ void Request_2(char * tok)
 
                 WriteToNamedPipe(GetValue(&writeNamedPipeList,i), message);
                 kill(GetValue(&workersPidList,i),SIGUSR1);
-
+                
             }
-
         }
     }
 
