@@ -31,7 +31,8 @@ long totalClients = 0;
 long currentClients = 0;
 
 PathNode * queries = NULL;
-
+PathNode * countries = NULL;
+Node * pidOfCountries = NULL;
 
 int main(int argc, char const *argv[])
 {
@@ -274,7 +275,18 @@ int main(int argc, char const *argv[])
 
     // write(GetItem_MyVector(bufferWorker,randomPick), message,strlen(message));
     // printf("%s\n",message);
+    // Request1();
+    char * tok;
+    char delimiters[] = " \n\t\r\v\f\n:,.><[]{}|=+*@#$";
+    char * temp = (char *)malloc(sizeof(char) * strlen("/diseaseFrequency COVID-2019 10-10-2010 10-10-2020")+ 1);
+    strcpy(temp,"/diseaseFrequency COVID-2019 10-10-2010 10-10-2020");
+    tok = strtok(temp,delimiters);
+    printf("%s\n",tok);
+    Request2(tok);
     while(1){}
-
+    // for (long i = 0; i < LenOfList(&queries); i++)
+    // {
+    //     Reqiest
+    // }
     return 0;
 }
