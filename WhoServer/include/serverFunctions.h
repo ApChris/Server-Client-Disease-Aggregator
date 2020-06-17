@@ -13,7 +13,8 @@
 #include <stdbool.h>
 #include "../include/myVector.h"
 #include "../../Master/include/list.h"
-
+#include "../../Master/include/requests.h"
+#include "../include/requestsFromServer.h"
 #define MAXIMUMBUFFER 4096
 
 long ReadFromSocket(long fileDescriptor, char * buffer);
