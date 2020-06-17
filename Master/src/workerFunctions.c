@@ -16,6 +16,12 @@ extern SumStatistics * generalStatistics;
 extern long buffersize;
 
 extern long workerSock;
+
+extern PathNode * workerQueries;
+
+extern char workerCountry[MAXIMUMBUFFER];
+
+
 // This function is rensponsible for filling the hash with file's records
 SumStatistics * FillStructures(const char * patientRecordsFile, Hash * diseaseHash, Hash * patientHash, Date * date, char * country)
 {
@@ -178,11 +184,12 @@ void Print_Input(char * patientRecordsFile, long diseaseHashtableNumOfEntries, l
 void listCountries(char * path)
 {
 
-    char messageStatistics[MAXBUFFER];
+    char messageStatistics[MAXBUFFER] = "";
 
-    sprintf(messageStatistics, "%s %ld", path, (long)getpid());
-    WriteToNamedPipe(fileDescriptorW,messageStatistics);
-
+    sprintf(messageStatistics, "%s %ld", workerCountry, (long)getpid());
+    // WriteToNamedPipe(fileDescriptorW,messageStatistics);
+    write(workerSock,messageStatistics,strlen(messageStatistics));
+    printf("%s\n",messageStatistics);
 }
 
 void diseaseFrequency(char * arguments)
@@ -608,7 +615,7 @@ void ReadingFiles(char * path)
     tok = strtok(NULL, delimiters);
     strcpy(country,tok);
     PushNode_Path(&countries,country);
-
+    strcpy(workerCountry,country);
     Date * datesArray = malloc(sizeof(*datesArray));
 
     struct dirent * subDirectory;
@@ -742,7 +749,8 @@ void ReadingFiles(char * path)
                 sprintf(messageStatistics, "\n%ld-%ld-%ld\n%s\n%s\nAge range 0-20 years: %ld cases\nAge range 21-40 years: %ld cases\nAge range 41-60 years: %ld cases\nAge range 65+ years: %ld cases\n",cdate -> day, cdate -> month, cdate -> year, country, statistics -> diseaseID,statistics -> cases_0_20,statistics -> cases_21_40,statistics -> cases_41_60,statistics -> cases_over_60);
                 flag++;
                 statistics = statistics -> next;
-                // WriteToNamedPipe(workerSock,messageStatistics);
+
+                // send to server
                 if (write(workerSock, messageStatistics, strlen(messageStatistics)) < 0)
                 {
                     perror("worker write");
@@ -756,6 +764,7 @@ void ReadingFiles(char * path)
                 sprintf(messageStatistics, "\n%s\nAge range 0-20 years: %ld cases\nAge range 21-40 years: %ld cases\nAge range 41-60 years: %ld cases\nAge range 65+ years: %ld cases\n",statistics -> diseaseID,statistics -> cases_0_20,statistics -> cases_21_40,statistics -> cases_41_60,statistics -> cases_over_60);
                 statistics = statistics -> next;
 
+                // send to server
                 if (write(workerSock, messageStatistics, strlen(messageStatistics)) < 0)
                 {
                     perror("worker write");
@@ -774,7 +783,16 @@ void ReadingFiles(char * path)
         free(statistics);
     }
 
+    char tempMessage[MAXIMUMBUFFER] = "";
+    read(workerSock,tempMessage,MAXIMUMBUFFER);
 
+    sprintf(tempMessage,"%ld-%s\n",(long)getpid(), workerCountry);
+
+    if (write(workerSock, tempMessage, strlen(tempMessage)) < 0)
+    {
+        perror("Worker - Reading files write");
+        exit(EXIT_FAILURE);
+    }
     // Deallocates
     free(datesArray);
     free(country);
@@ -827,6 +845,7 @@ void ReadRequests(char * path)
     struct timeval timeOut;
     long rv;
     long lines = 0;
+    char * tok = NULL;
 
     if (read(workerSock, message, MAXIMUMBUFFER) < 0)
     {
@@ -841,9 +860,98 @@ void ReadRequests(char * path)
             lines++;
         }
     }
+    tok = strtok(message, "\n");
+    PushNode_Path(&workerQueries,message);
+    // printf("%s\n",tok);
+    for (long i = 1; i < lines; i++)
+    {
+        tok = strtok(NULL,"\n");
+        PushNode_Path(&workerQueries,tok);
+        // printf("%s\n",tok);
+    }
+    // PrintList_Path(&workerQueries);
     for (long i = 0; i < lines; i++)
     {
+        char * command = (char *)malloc(sizeof(char)*50);
+        char * arguments;
 
+        if( (sscanf(GetValue_Path(&workerQueries,i), "%49s%m[^\n]", command, &arguments)) != EOF )
+        {
+            printf("%s\n",command);
+
+            if(!strcmp(command, "/listCountries"))
+            {
+
+
+                // char delimiters[] = " \n\t\r\v\f\n:,/.><[]{}|=+*@#$-";
+                // char * tok = NULL;
+                // tok = strtok(arguments, delimiters);
+                // tok = strtok(NULL, delimiters);
+                // tok = strtok(NULL, delimiters);
+                // tok = strtok(NULL, delimiters);
+                // path = (char *)malloc(sizeof(char)* strlen(tok));
+                // strcpy(path,tok);
+
+                listCountries(NULL);
+
+            }
+            // else if(!strcmp(command, "/diseaseFrequency"))
+            // {
+            //
+            //     diseaseFrequency(arguments);
+            //
+            // }
+            // else if(!strcmp(command, "/topk-AgeRanges"))
+            // {
+            //
+            //     topkAgeRanges(arguments);
+            //
+            // }
+            // else if(!strcmp(command, "/numPatientAdmissions"))
+            // {
+            //     numPatientAdmissions(arguments);
+            //
+            // }
+            // else if(!strcmp(command, "/searchPatientRecord"))
+            // {
+            //     char delimiters[] = " \n\t\r\v\f\n:,/.><[]{}|=+*@#$-";
+            //     char * tok = NULL;
+            //     tok = strtok(arguments, delimiters);
+            //
+            //     searchPatientRecord(tok);
+            //
+            // }
+            // else if(!strcmp(command, "/numPatientDischarges"))
+            // {
+            //     numPatientDischarges(arguments);
+            //
+            // }
+            // else if(!strcmp(command, "/reCreateWorker"))
+            // {
+            //     reCreateWorker();
+            // }
+            // else if(!strcmp(command, "/ReadRequests"))
+            // {
+            //     char * path;
+            //     // char * procID;
+            //     char delimiters[] = " \n\t\r\v\f\n:,/.><[]{}|=+*@#$-";
+            //     char * tok = NULL;
+            //     tok = strtok(arguments, delimiters);
+            //     // procID = (char *)malloc(sizeof(char)* strlen(tok));
+            //     // strcpy(procID,tok);
+            //     tok = strtok(NULL, " \n");
+            //     path = (char *)malloc(sizeof(char)* strlen(tok));
+            //     strcpy(path,tok);
+            //     // printf("%s\n",path);
+            //     ReadRequests(path);
+            // }
+            // else
+            // {
+            //     printf("Wrong input\n");
+            // }
+
+            // free(command);
+        }
     }
     printf("%ld\n",lines);
     // while(1)
