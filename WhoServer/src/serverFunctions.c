@@ -23,6 +23,8 @@ extern long totalClients;
 extern long currentClients;
 
 extern PathNode * queries;
+extern PathNode * countries;
+extern Node * pidOfCountries;
 
 // sockets
 long sock;
@@ -258,14 +260,24 @@ void * WorkersThreadJob(void * argp)
 {
 
     long *id = argp;
-
+    char * tok = NULL;
     pthread_mutex_lock(&mutex);
 
     char message[MAXIMUMBUFFER] = "";
+    char tmpMessage[MAXIMUMBUFFER] = "";
+
     long bytes = read(GetItem_MyVector(bufferWorker,indexOfVector), message, MAXIMUMBUFFER);
 
     message[bytes] = '\0';
     printf("%s\n",message, bytes);
+    write(GetItem_MyVector(bufferWorker,indexOfVector), "ReadStatistics", strlen("ReadStatics"));
+    bytes = read(GetItem_MyVector(bufferWorker,indexOfVector), tmpMessage, MAXIMUMBUFFER);
+    tmpMessage[bytes] = '\0';
+    tok = strtok(tmpMessage, "-");
+    PushNode(&pidOfCountries,atol(tok));
+    tok = strtok(NULL, "\n");
+    PushNode_Path(&countries,tok);
+
     indexOfVector++;
     pthread_mutex_unlock(&mutex);
     pthread_exit(NULL);
@@ -285,10 +297,7 @@ void * ClientsThreadJob(void * argp)
     printf("Server Thread %ld received from --->%s\n", (long)GetItem_MyVector(bufferClient,indexOfVectorC), message);
     PushNode_Path(&queries,message);
     write(GetItem_MyVector(bufferClient,indexOfVectorC), "Completed", strlen("Completed\0"));
-    // srand(time(NULL));
-    // long randomPick = rand()%totalWorkers;
-    // write(GetItem_MyVector(bufferWorker,randomPick), message,strlen(message));
-    // printf("%s\n",message);
+
     indexOfVectorC++;
     pthread_mutex_unlock(&mutex);
     pthread_exit(NULL);
