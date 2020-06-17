@@ -11,6 +11,8 @@ Hash * patientHash;
 long errorRecords = 0;
 long successRecords = 0;
 PathNode * countries = NULL;
+PathNode * workerQueries = NULL;
+char workerCountry[MAXIMUMBUFFER] = "";
 
 SumStatistics * generalStatistics;
 long buffersize;
@@ -26,10 +28,10 @@ long workerSock;
 
 void SigHandler()
 {
-
+    printf("MPHHHKA\n");
     char buffer[MAXIMUMBUFFER] = "";
     ReadFromNamedPipe(fileDescriptorR, buffer);
-
+    // read(workerSock, buffer, MAXIMUMBUFFER);
     char * command = (char *)malloc(sizeof(char)*50);
     char * arguments;
 
@@ -106,21 +108,6 @@ void SigHandler()
         {
             reCreateWorker();
         }
-        else if(!strcmp(command, "/ReadRequests"))
-        {
-            char * path;
-            // char * procID;
-            char delimiters[] = " \n\t\r\v\f\n:,/.><[]{}|=+*@#$-";
-            char * tok = NULL;
-            tok = strtok(arguments, delimiters);
-            // procID = (char *)malloc(sizeof(char)* strlen(tok));
-            // strcpy(procID,tok);
-            tok = strtok(NULL, " \n");
-            path = (char *)malloc(sizeof(char)* strlen(tok));
-            strcpy(path,tok);
-            // printf("%s\n",path);
-            ReadRequests(path);
-        }
         else
         {
             printf("Wrong input\n");
@@ -132,21 +119,117 @@ void SigHandler()
 }
 
 
+void SigHandlerServer()
+{
+    printf("mphka\n");
+    char buffer[MAXIMUMBUFFER] = "";
+    // ReadFromNamedPipe(fileDescriptorR, buffer);
+    read(workerSock, buffer, MAXIMUMBUFFER);
+    char * command = (char *)malloc(sizeof(char)*50);
+    char * arguments;
+
+    if( (sscanf(buffer, "%49s%m[^\n]", command, &arguments)) != EOF )
+    {
+
+        if(!strcmp(command, "/ReadingFiles"))
+        {
+            // Preprocess arguments that are going to be send
+            char * path;
+            // char * procID;
+            char delimiters[] = " \n\t\r\v\f\n:,/.><[]{}|=+*@#$-";
+            char * tok = NULL;
+            tok = strtok(arguments, delimiters);
+            // procID = (char *)malloc(sizeof(char)* strlen(tok));
+            // strcpy(procID,tok);
+            tok = strtok(NULL, " \n");
+            path = (char *)malloc(sizeof(char)* strlen(tok));
+            strcpy(path,tok);
+
+            ReadingFiles(path);
+
+
+        }
+        else if(!strcmp(command, "/listCountries"))
+        {
+            char * path;
+
+            char delimiters[] = " \n\t\r\v\f\n:,/.><[]{}|=+*@#$-";
+            char * tok = NULL;
+            tok = strtok(arguments, delimiters);
+
+            tok = strtok(NULL, delimiters);
+            tok = strtok(NULL, delimiters);
+            tok = strtok(NULL, delimiters);
+            path = (char *)malloc(sizeof(char)* strlen(tok));
+            strcpy(path,tok);
+
+            listCountries(path);
+
+        }
+        else if(!strcmp(command, "/diseaseFrequency"))
+        {
+
+            diseaseFrequency(arguments);
+
+        }
+        else if(!strcmp(command, "/topk-AgeRanges"))
+        {
+
+            topkAgeRanges(arguments);
+
+        }
+        else if(!strcmp(command, "/numPatientAdmissions"))
+        {
+            numPatientAdmissions(arguments);
+
+        }
+        else if(!strcmp(command, "/searchPatientRecord"))
+        {
+            char delimiters[] = " \n\t\r\v\f\n:,/.><[]{}|=+*@#$-";
+            char * tok = NULL;
+            tok = strtok(arguments, delimiters);
+
+            searchPatientRecord(tok);
+
+        }
+        else if(!strcmp(command, "/numPatientDischarges"))
+        {
+            numPatientDischarges(arguments);
+
+        }
+        else if(!strcmp(command, "/reCreateWorker"))
+        {
+            reCreateWorker();
+        }
+        else
+        {
+            printf("Wrong input\n");
+        }
+
+        free(command);
+    }
+
+}
+
 int main(int argc, const char *argv[])
 {
 
     static struct sigaction terminatingAction;
     static struct sigaction answerAction;
+    static struct sigaction answerActionServer;
 
     terminatingAction.sa_handler = Elimination;
     sigfillset(&(terminatingAction.sa_mask));
-    sigaction(SIGINT, &terminatingAction, NULL);
     sigaction(SIGTERM, &terminatingAction, NULL);
     sigaction(SIGQUIT, &terminatingAction, NULL);
 
     answerAction.sa_handler = SigHandler;
     sigfillset(&(answerAction.sa_mask));
     sigaction(SIGUSR1, &answerAction, NULL);
+
+    // answerActionServer.sa_handler = SigHandlerServer;
+    // sigfillset(&(answerActionServer.sa_mask));
+    // sigaction(SIGINT, &answerActionServer, NULL);
 
 
     printf("WORKER has been created with pid: %ld \n",(long)getpid());
