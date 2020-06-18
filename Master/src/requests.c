@@ -128,7 +128,7 @@ void Request_2(char * tok)
 
                 WriteToNamedPipe(GetValue(&writeNamedPipeList,i), message);
                 kill(GetValue(&workersPidList,i),SIGUSR1);
-                
+
             }
         }
     }
@@ -213,6 +213,7 @@ void Request_3(char * tok)
         tok = strtok(currentCountry, delimiters);
         tok = strtok(NULL, delimiters);
         tok = strtok(NULL, delimiters);
+        tok = strtok(NULL, delimiters);
         if(!country)
         {
             printf("Flag\n");
@@ -247,8 +248,8 @@ void Request_3(char * tok)
 
         tok = strtok(currentCountry, delimiters);
         tok = strtok(NULL, delimiters);
-        tok = strtok(NULL, delimiters);
-
+            tok = strtok(NULL, delimiters);
+            tok = strtok(NULL, delimiters);
             if(!strcmp(country,tok))
             {
                 do
@@ -427,6 +428,7 @@ void Request_5(char * tok)
         tok = strtok(currentCountry, delimiters);
         tok = strtok(NULL, delimiters);
         tok = strtok(NULL, delimiters);
+        tok = strtok(NULL, delimiters);
         if(!country)
         {
             printf("%s %ld\n",tok, atol(result));
@@ -508,7 +510,7 @@ void Request_6(char * tok)
         for (long i = 0; i < totalWorkers; i++)
         {
 
-            sprintf(message,"/numPatientAdmissions %s %ld-%ld-%ld %ld-%ld-%ld",diseaseID, date1 -> day, date1 -> month, date1 -> year,date2 -> day, date2 -> month, date2 -> year);
+            sprintf(message,"/numPatientDischarges %s %ld-%ld-%ld %ld-%ld-%ld",diseaseID, date1 -> day, date1 -> month, date1 -> year,date2 -> day, date2 -> month, date2 -> year);
 
             WriteToNamedPipe(GetValue(&writeNamedPipeList,i), message);
             kill(GetValue(&workersPidList,i),SIGUSR1);
@@ -532,7 +534,7 @@ void Request_6(char * tok)
 
             if(!strcmp(path,country))
             {
-                sprintf(message,"/numPatientAdmissions %s %ld-%ld-%ld %ld-%ld-%ld %s",diseaseID, date1 -> day, date1 -> month, date1 -> year,date2 -> day, date2 -> month, date2 -> year, country);
+                sprintf(message,"/numPatientDischarges %s %ld-%ld-%ld %ld-%ld-%ld %s",diseaseID, date1 -> day, date1 -> month, date1 -> year,date2 -> day, date2 -> month, date2 -> year, country);
 
                 WriteToNamedPipe(GetValue(&writeNamedPipeList,i), message);
                 kill(GetValue(&workersPidList,i),SIGUSR1);
@@ -564,6 +566,7 @@ void Request_6(char * tok)
         tok = strtok(currentCountry, delimiters);
         tok = strtok(NULL, delimiters);
         tok = strtok(NULL, delimiters);
+                tok = strtok(NULL, delimiters);
         if(!country)
         {
             printf("%s %ld\n",tok, atol(result));
@@ -656,13 +659,50 @@ long Read_Requests()
     char * request = NULL;
     size_t length;
     long read;
-    while((read = getline(&request,&length, stdin)) != -1)
-    {
-        if(Read_Requests_Parse(request))
-        {
-            free(request);
-            break;
-        }
-    }
-    return -1;
+    char messageFinal[MAXIMUMBUFFER] = "/topk-AgeRanges 3 Greece COVID-2019 10-10-2010 10-10-2020\n";
+    char message1[MAXIMUMBUFFER] = "/diseaseFrequency MERS-COV 10-10-2010 10-10-2020\n";
+    char message2[MAXIMUMBUFFER] = "/listCountries\n";
+    char message3[MAXIMUMBUFFER] = "/numPatientAdmissions COVID-2019 10-10-2010 10-10-2020\n";
+
+    printf("%s\n",messageFinal);
+    Read_Requests_Parse(messageFinal);
+    printf("%s\n",message1);
+    Read_Requests_Parse(message1);
+    printf("%s\n",message2);
+    Read_Requests_Parse(message2);
+    printf("%s\n",message3);
+    Read_Requests_Parse(message3);
+    // printf("%s\n",message);
+    // long lines = 0;
+    // for (long i = 0; i < strlen(message); i++)
+    // {
+    //     if(message[i] == '\n')
+    //     {
+    //         lines++;
+    //     }
+    // }
+    // char * tok = NULL;
+    // tok = strtok(message, "\n");
+    // // printf("%s\n",tok);
+    // // Read_Requests_Parse(tok);
+    // for (long i = 1; i < lines; i++)
+    // {
+    //
+    //
+    //     tok = strtok(NULL,"\n");
+    //
+    //
+    //
+    //     printf("%s\n",tok);
+    //     Read_Requests_Parse(tok);
+    // }
+    // while((read = getline(&request,&length, stdin)) != -1)
+    // {
+    //     if(Read_Requests_Parse(request))
+    //     {
+    //         free(request);
+    //         break;
+    //     }
+
+    // return -1;
 }
