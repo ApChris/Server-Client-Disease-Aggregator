@@ -160,6 +160,7 @@ int main(int argc, char const *argv[])
     printf("Requests\n");
 
     // while(!Read_Requests()){}
+    Read_Requests();
     // SetWorkersForRequests();
     while(1){}
     return 0;
