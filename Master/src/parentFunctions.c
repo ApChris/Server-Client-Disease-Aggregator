@@ -71,6 +71,19 @@ void SetWorkersForRequests()
 
 
     }
+    // char result[MAXIMUMBUFFER] = "";
+    // for (long i = 0; i < totalWorkers; i++)
+    // {
+    //
+    //     long bytes = 0;
+    //     do
+    //     {
+    //         usleep(1);
+    //     }while((bytes = ReadFromNamedPipe(GetValue(&readNamedPipeList,i), result))<=0);
+    //
+    //     printf("%s\n",result);
+    //     printf("--------------------------------------\n");
+    // }
 
 }
 
