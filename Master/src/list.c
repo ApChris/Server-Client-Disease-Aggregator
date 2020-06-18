@@ -305,7 +305,6 @@ void Reverse_Path(PathNode ** head)
 
 
 
-
 /////////////////////////////// Statistics ///////////////////////////////
 SumStatistics * SumStatistics_Init()
 {
