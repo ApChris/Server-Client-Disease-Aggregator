@@ -138,7 +138,7 @@ void Request2(char * tok)
             }
             // WriteToNamedPipe(GetValue(&writeNamedPipeList,i), message);
             // kill(GetValue(&workersPidList,i),SIGUSR1);
-            kill((long)GetItem_MyVector(bufferWorker,i),SIGUSR1);
+            kill(GetItem_MyVector(bufferWorker,i),SIGUSR1);
             printf("4\n");
         }
     }
@@ -163,11 +163,11 @@ void Request2(char * tok)
                 sprintf(message,"/diseaseFrequency %s %ld-%ld-%ld %ld-%ld-%ld %s",diseaseID, date1 -> day, date1 -> month, date1 -> year,date2 -> day, date2 -> month, date2 -> year, country);
                 printf("%s\n",message);
                 // WriteToNamedPipe(GetValue(&writeNamedPipeList,i), message);
-                if(write((GetItem_MyVector(bufferWorker,i), message, strlen(message)) < 0)
-                    {
-                        perror("Request2 write");
-                        exit(EXIT_FAILURE);
-                    }
+                if(write(GetItem_MyVector(bufferWorker,i), message, strlen(message)) < 0)
+                {
+                    perror("Request2 write");
+                    exit(EXIT_FAILURE);
+                }
                 // kill(GetValue(&workersPidList,i),SIGUSR1);
                 kill(GetItem_MyVector(bufferWorker,i),SIGUSR1);
                 printf("5\n");
