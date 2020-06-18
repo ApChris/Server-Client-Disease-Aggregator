@@ -187,13 +187,14 @@ void listCountries(char * path)
     char messageStatistics[MAXBUFFER] = "";
 
     sprintf(messageStatistics, "%s %ld", workerCountry, (long)getpid());
-    // WriteToNamedPipe(fileDescriptorW,messageStatistics);
-    write(workerSock,messageStatistics,strlen(messageStatistics));
-    printf("%s\n",messageStatistics);
+    WriteToNamedPipe(fileDescriptorW,messageStatistics);
+    // write(workerSock,messageStatistics,strlen(messageStatistics));
+
 }
 
 void diseaseFrequency(char * arguments)
 {
+
     char delimiters[] = " \n\t\r\v\f\n-:,/.><[]{}|-=+*@#$;";
 
     char * diseaseID;
@@ -245,6 +246,7 @@ void diseaseFrequency(char * arguments)
 // diseaseFrequency H1N1 10-10-2010 20-20-2020 Greece
 
     tok = strtok(NULL,delimiters);
+
     // without country
     if(tok == NULL)
     {
@@ -257,6 +259,7 @@ void diseaseFrequency(char * arguments)
         sprintf(message,"%ld\n", res);
         WriteToNamedPipe(fileDescriptorW,message);
 
+        // write(workerSock,message,strlen(message));
     }
     // user gave a country
     else
@@ -271,6 +274,7 @@ void diseaseFrequency(char * arguments)
         char message[MAXBUFFER];
         sprintf(message,"%ld\n",tResult);
         WriteToNamedPipe(fileDescriptorW,message);
+        // write(workerSock,message,strlen(message));
         free(country);
     }
     free(date1);
@@ -329,20 +333,28 @@ void topkAgeRanges(char * arguments)
     tok = strtok(NULL,delimiters);
     date2 -> year = (long)atoi(tok);
 
-    generalStatistics = SumStatistics_Init();
-    Hash_getStatisticsPatientsInThatPeriod(diseaseHash,Hash_Function_DJB2((unsigned char *)diseaseID),diseaseID,date1,date2,country,generalStatistics);
+    SumStatistics * generalStatisticsTemp = (SumStatistics *)malloc(sizeof(SumStatistics));
+    generalStatisticsTemp -> diseaseID = NULL;
+    generalStatisticsTemp -> cases_0_20 = 0;
+    generalStatisticsTemp -> cases_21_40 = 0;
+    generalStatisticsTemp -> cases_41_60 = 0;
+    generalStatisticsTemp -> cases_over_60 = 0;
+    Hash_getStatisticsPatientsInThatPeriod(diseaseHash,Hash_Function_DJB2((unsigned char *)diseaseID),diseaseID,date1,date2,country,generalStatisticsTemp);
 
     char message[MAXBUFFER];
-    long totalPatients = generalStatistics -> cases_0_20 + generalStatistics -> cases_21_40 + generalStatistics -> cases_41_60 + generalStatistics -> cases_over_60;
+    long totalPatients = generalStatisticsTemp -> cases_0_20 + generalStatisticsTemp -> cases_21_40 + generalStatisticsTemp -> cases_41_60 + generalStatisticsTemp -> cases_over_60;
     double percentCase[4];
-    percentCase[0] = 100*((double)(generalStatistics -> cases_0_20)/totalPatients);
-    percentCase[1] = 100*((double)(generalStatistics -> cases_21_40)/totalPatients);
-    percentCase[2] = 100*((double)(generalStatistics -> cases_41_60)/totalPatients);
-    percentCase[3] = 100*((double)(generalStatistics -> cases_over_60)/totalPatients);
+    percentCase[0] = 100*((double)(generalStatisticsTemp -> cases_0_20)/totalPatients);
+    percentCase[1] = 100*((double)(generalStatisticsTemp -> cases_21_40)/totalPatients);
+    percentCase[2] = 100*((double)(generalStatisticsTemp -> cases_41_60)/totalPatients);
+    percentCase[3] = 100*((double)(generalStatisticsTemp -> cases_over_60)/totalPatients);
+
+
     if(totalPatients == 0)
     {
         sprintf(message,"Not found any patient!\n");
         WriteToNamedPipe(fileDescriptorW,message);
+        // write(workerSock,message,strlen(message));
         free(date1);
         free(date2);
         return;
@@ -365,22 +377,27 @@ void topkAgeRanges(char * arguments)
         {
             sprintf(message,"0-20: %0.lf%%\n",percentCase[position]);
             WriteToNamedPipe(fileDescriptorW,message);
+            // write(workerSock,message,strlen(message));
         }
         else if(position == 1)
         {
             sprintf(message,"21-40: %0.lf%%\n",percentCase[position]);
             WriteToNamedPipe(fileDescriptorW,message);
+            // write(workerSock,message,strlen(message));
         }
         else if(position == 2)
         {
             sprintf(message,"41-60: %0.lf%%\n",percentCase[position]);
             WriteToNamedPipe(fileDescriptorW,message);
+            // write(workerSock,message,strlen(message));
         }
         else
         {
 
             sprintf(message,"60+: %0.lf%%\n",percentCase[position]);
             WriteToNamedPipe(fileDescriptorW,message);
+                // write(workerSock,message,strlen(message));
+
         }
         percentCase[position] = -1;
         counter++;
@@ -406,6 +423,7 @@ void searchPatientRecord(char * recordID)
     {
         sprintf(message, "Not Found");
         WriteToNamedPipe(fileDescriptorW,message);
+        // write(workerSock,message,strlen(message));
     }
     else
     {
@@ -418,6 +436,7 @@ void searchPatientRecord(char * recordID)
             sprintf(message, "%s %s %s %s %s %ld %ld-%ld-%ld %ld-%ld-%ld",info -> recordID, info -> patientFirstName, info -> patientLastName,info -> diseaseID, info -> country, info -> age, info -> entryDate -> day, info -> entryDate -> month, info -> entryDate -> year, info -> exitDate -> day, info -> exitDate -> month, info -> exitDate -> year);
         }
         WriteToNamedPipe(fileDescriptorW,message);
+        // write(workerSock,message,strlen(message));
     }
 }
 
@@ -487,6 +506,7 @@ void numPatientAdmissions(char * arguments)
 
         sprintf(message,"%ld\n", res);
         WriteToNamedPipe(fileDescriptorW,message);
+        // write(workerSock,message,strlen(message));
 
     }
     // user gave a country
@@ -502,6 +522,7 @@ void numPatientAdmissions(char * arguments)
         char message[MAXBUFFER];
         sprintf(message,"%ld\n", tResult);
         WriteToNamedPipe(fileDescriptorW,message);
+        // write(workerSock,message,strlen(message));
         free(country);
     }
     free(date1);
@@ -575,6 +596,7 @@ void numPatientDischarges(char * arguments)
 
         sprintf(message,"%ld\n", res);
         WriteToNamedPipe(fileDescriptorW,message);
+        // write(workerSock,message,strlen(message));
 
     }
     // user gave a country
@@ -590,6 +612,7 @@ void numPatientDischarges(char * arguments)
         char message[MAXBUFFER];
         sprintf(message,"%ld\n", tResult);
         WriteToNamedPipe(fileDescriptorW,message);
+        // write(workerSock,message,strlen(message));
         free(country);
     }
     free(date1);
@@ -738,7 +761,7 @@ void ReadingFiles(char * path)
         SumStatistics * statistics = FillStructures(GetValue_Path(&filesPathList, i), diseaseHash, patientHash, cdate, country);
 
         char messageStatistics[MAXBUFFER];
-        printf("%ld %ld %ld\n", cdate -> day, cdate -> month, cdate -> year);
+        // printf("%ld %ld %ld\n", cdate -> day, cdate -> month, cdate -> year);
         long flag = 0;
         while(statistics != NULL)
         {
@@ -846,12 +869,18 @@ void ReadRequests(char * path)
     long rv;
     long lines = 0;
     char * tok = NULL;
+    char delimiters[] = " \n\t\r\v\f\n:,/.><[]{}|=+*@#$-";
 
     if (read(workerSock, message, MAXIMUMBUFFER) < 0)
     {
-        perror("worker write");
+        perror("worker read");
         exit(EXIT_FAILURE);
     }
+    // if (write(workerSock, "Accepted", strlen("Accepted") + 1) < 0)
+    // {
+    //     perror("worker write");
+    //     exit(EXIT_FAILURE);
+    // }
     printf("--------Worker: %ld-------\n%s\n", processID,message);
     for (long i = 0; i < strlen(message); i++)
     {
@@ -872,60 +901,48 @@ void ReadRequests(char * path)
     // PrintList_Path(&workerQueries);
     for (long i = 0; i < lines; i++)
     {
-        char * command = (char *)malloc(sizeof(char)*50);
+        char * command = (char *)malloc(sizeof(char)*MAXIMUMBUFFER);
         char * arguments;
-
-        if( (sscanf(GetValue_Path(&workerQueries,i), "%49s%m[^\n]", command, &arguments)) != EOF )
-        {
-            printf("%s\n",command);
-
+        char * tok = NULL;
+        strcpy(command, GetValue_Path(&workerQueries,i));
+        command = strtok(command," ");
+        arguments = strtok(NULL,"\n");
+            // printf("-->%s\n",command);
+            // printf("------->%s\n",arguments);
             if(!strcmp(command, "/listCountries"))
             {
 
-
-                // char delimiters[] = " \n\t\r\v\f\n:,/.><[]{}|=+*@#$-";
-                // char * tok = NULL;
-                // tok = strtok(arguments, delimiters);
-                // tok = strtok(NULL, delimiters);
-                // tok = strtok(NULL, delimiters);
-                // tok = strtok(NULL, delimiters);
-                // path = (char *)malloc(sizeof(char)* strlen(tok));
-                // strcpy(path,tok);
-
-                listCountries(NULL);
+            }
+            else if(!strcmp(command, "/diseaseFrequency"))
+            {
+                diseaseFrequency(arguments);
 
             }
-            // else if(!strcmp(command, "/diseaseFrequency"))
-            // {
-            //
-            //     diseaseFrequency(arguments);
-            //
-            // }
-            // else if(!strcmp(command, "/topk-AgeRanges"))
-            // {
-            //
-            //     topkAgeRanges(arguments);
-            //
-            // }
-            // else if(!strcmp(command, "/numPatientAdmissions"))
-            // {
-            //     numPatientAdmissions(arguments);
-            //
-            // }
-            // else if(!strcmp(command, "/searchPatientRecord"))
-            // {
-            //     char delimiters[] = " \n\t\r\v\f\n:,/.><[]{}|=+*@#$-";
-            //     char * tok = NULL;
-            //     tok = strtok(arguments, delimiters);
-            //
-            //     searchPatientRecord(tok);
-            //
-            // }
-            // else if(!strcmp(command, "/numPatientDischarges"))
-            // {
-            //     numPatientDischarges(arguments);
-            //
-            // }
+            else if(!strcmp(command, "/topk-AgeRanges"))
+            {
+
+                topkAgeRanges(arguments);
+
+            }
+            else if(!strcmp(command, "/numPatientAdmissions"))
+            {
+                numPatientAdmissions(arguments);
+
+            }
+            else if(!strcmp(command, "/searchPatientRecord"))
+            {
+                char delimiters[] = " \n\t\r\v\f\n:,/.><[]{}|=+*@#$-";
+                char * tok = NULL;
+                tok = strtok(arguments, delimiters);
+
+                searchPatientRecord(tok);
+
+            }
+            else if(!strcmp(command, "/numPatientDischarges"))
+            {
+                numPatientDischarges(arguments);
+
+            }
             // else if(!strcmp(command, "/reCreateWorker"))
             // {
             //     reCreateWorker();
@@ -951,7 +968,7 @@ void ReadRequests(char * path)
             // }
 
             // free(command);
-        }
+
     }
     printf("%ld\n",lines);
     // while(1)
