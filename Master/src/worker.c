@@ -28,10 +28,8 @@ long workerSock;
 
 void SigHandler()
 {
-    printf("MPHHHKA\n");
     char buffer[MAXIMUMBUFFER] = "";
     ReadFromNamedPipe(fileDescriptorR, buffer);
-    // read(workerSock, buffer, MAXIMUMBUFFER);
     char * command = (char *)malloc(sizeof(char)*50);
     char * arguments;
 
@@ -42,12 +40,9 @@ void SigHandler()
         {
             // Preprocess arguments that are going to be send
             char * path;
-            // char * procID;
             char delimiters[] = " \n\t\r\v\f\n:,/.><[]{}|=+*@#$-";
             char * tok = NULL;
             tok = strtok(arguments, delimiters);
-            // procID = (char *)malloc(sizeof(char)* strlen(tok));
-            // strcpy(procID,tok);
             tok = strtok(NULL, " \n");
             path = (char *)malloc(sizeof(char)* strlen(tok));
             strcpy(path,tok);
@@ -104,98 +99,16 @@ void SigHandler()
             numPatientDischarges(arguments);
 
         }
-        else if(!strcmp(command, "/reCreateWorker"))
+        else if(!strcmp(command, "/ReadRequests"))
         {
-            reCreateWorker();
-        }
-        else
-        {
-            printf("Wrong input\n");
-        }
-
-        free(command);
-    }
-
-}
-
-
-void SigHandlerServer()
-{
-    printf("mphka\n");
-    char buffer[MAXIMUMBUFFER] = "";
-    // ReadFromNamedPipe(fileDescriptorR, buffer);
-    read(workerSock, buffer, MAXIMUMBUFFER);
-    char * command = (char *)malloc(sizeof(char)*50);
-    char * arguments;
-
-    if( (sscanf(buffer, "%49s%m[^\n]", command, &arguments)) != EOF )
-    {
-
-        if(!strcmp(command, "/ReadingFiles"))
-        {
-            // Preprocess arguments that are going to be send
             char * path;
-            // char * procID;
             char delimiters[] = " \n\t\r\v\f\n:,/.><[]{}|=+*@#$-";
             char * tok = NULL;
-            tok = strtok(arguments, delimiters);
-            // procID = (char *)malloc(sizeof(char)* strlen(tok));
-            // strcpy(procID,tok);
+            tok = strtok(arguments,delimiters);
             tok = strtok(NULL, " \n");
-            path = (char *)malloc(sizeof(char)* strlen(tok));
+            path = (char *)malloc(sizeof(char) * strlen(tok));
             strcpy(path,tok);
-
-            ReadingFiles(path);
-
-
-        }
-        else if(!strcmp(command, "/listCountries"))
-        {
-            char * path;
-
-            char delimiters[] = " \n\t\r\v\f\n:,/.><[]{}|=+*@#$-";
-            char * tok = NULL;
-            tok = strtok(arguments, delimiters);
-
-            tok = strtok(NULL, delimiters);
-            tok = strtok(NULL, delimiters);
-            tok = strtok(NULL, delimiters);
-            path = (char *)malloc(sizeof(char)* strlen(tok));
-            strcpy(path,tok);
-
-            listCountries(path);
-
-        }
-        else if(!strcmp(command, "/diseaseFrequency"))
-        {
-
-            diseaseFrequency(arguments);
-
-        }
-        else if(!strcmp(command, "/topk-AgeRanges"))
-        {
-
-            topkAgeRanges(arguments);
-
-        }
-        else if(!strcmp(command, "/numPatientAdmissions"))
-        {
-            numPatientAdmissions(arguments);
-
-        }
-        else if(!strcmp(command, "/searchPatientRecord"))
-        {
-            char delimiters[] = " \n\t\r\v\f\n:,/.><[]{}|=+*@#$-";
-            char * tok = NULL;
-            tok = strtok(arguments, delimiters);
-
-            searchPatientRecord(tok);
-
-        }
-        else if(!strcmp(command, "/numPatientDischarges"))
-        {
-            numPatientDischarges(arguments);
-
+            ReadRequests(path);
         }
         else if(!strcmp(command, "/reCreateWorker"))
         {
@@ -210,6 +123,8 @@ void SigHandlerServer()
     }
 
 }
+
+
 
 int main(int argc, const char *argv[])
 {
