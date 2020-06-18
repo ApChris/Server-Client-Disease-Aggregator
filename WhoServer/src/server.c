@@ -218,75 +218,348 @@ int main(int argc, char const *argv[])
     //     }
     // }
     printf("END\n");
-    long quotient = totalClients/totalWorkers;
+    // long quotient = totalClients/totalWorkers;
     long queriesPerWorker[totalWorkers];
-    long index = 0;
-    if(quotient == 0)
-    {
-        // if we have more workers than clients
+    for (size_t i = 0; i < totalWorkers; i++) {
+        queriesPerWorker[i] = 0;
     }
-    else
-    {
-        for (long i = 0; i < totalWorkers; i++)
-        {
-            queriesPerWorker[i] = quotient;
-            if(i + 1 == totalWorkers)
-            {
-                long remainder = totalClients - (quotient*totalWorkers);
-                queriesPerWorker[i] = quotient + remainder;
-            }
-        }
-    }
+    // long index = 0;
+    // if(quotient == 0)
+    // {
+    //     // if we have more workers than clients
+    // }
+    // else
+    // {
+    //     for (long i = 0; i < totalWorkers; i++)
+    //     {
+    //         queriesPerWorker[i] = quotient;
+    //         if(i + 1 == totalWorkers)
+    //         {
+    //             long remainder = totalClients - (quotient*totalWorkers);
+    //             queriesPerWorker[i] = quotient + remainder;
+    //         }
+    //     }
+    // }
     PrintList_Path(&queries);
-    for (long i = 0; i < totalWorkers; i++)
+    PrintList_Path(&countries);
+
+    char finalMessage[MAXIMUMBUFFER] = "";
+    for (size_t j = 0; j < LenOfList(queries); j++)
     {
-
-
-        char finalMessage[MAXIMUMBUFFER] = "";
-
-        for (long j = 0; j < queriesPerWorker[i]; j++)
+        char message[MAXIMUMBUFFER] = "";
+        sprintf(message, "%s", GetValue_Path(&queries,j));
+        char * command = NULL;
+        command = strtok(message, ">");
+        command = strtok(NULL,"\n");
+        if(j == 0)
         {
-
-            char message[MAXIMUMBUFFER] = "";
-            sprintf(message, "%s", GetValue_Path(&queries,index));
-            char * tok = strtok(message, ">");
-            tok = strtok(NULL,"\n");
-            if(j == 0)
-            {
-                sprintf(finalMessage,"%s\n",tok);
-            }
-            else
-            {
-                strcat(finalMessage,tok);
-                strcat(finalMessage,"\n");
-
-            }
-            index++;
+            sprintf(finalMessage,"%s\n",command);
         }
-        printf("%s\n",finalMessage);
-        // sprintf(message, "%s", GetValue_Path(&queries,i));
-        // char * tok = strtok(message, ">");
-        // tok = strtok(NULL,"\n");
-        // strcpy(finalMessage,tok);
-        // printf("%s\n", tok);
-        // sprintf(message,"Heelo from %ld \n", i);
-        write(GetItem_MyVector(bufferWorker,i), finalMessage ,strlen(finalMessage));
+        else
+        {
+            strcat(finalMessage,command);
+            strcat(finalMessage,"\n");
+        }
+
     }
+    printf("%s\n",finalMessage);
+    // for (size_t i = 0; i < totalWorkers; i++) {
+    //     write(GetItem_MyVector(bufferWorker,i), finalMessage ,strlen(finalMessage));
+    // }
+    // for (size_t i = 0; i < totalWorkers; i++)
+    // {
+    //     for (size_t j = 0; j < LenOfList(queries); j++)
+    //     {
+    //         char finalMessage[MAXIMUMBUFFER] = "";
+    //         read(GetItem_MyVector(bufferWorker,i), finalMessage ,MAXIMUMBUFFER);
+    //         printf("%s\n",finalMessage);
+    //     }
+    //
+    // }
+    // bool used[LenOfList(queries)];
+    // for (size_t i = 0; i < LenOfList(queries); i++) {
+    //     used[i] = false;
+    // }
+    // for (long i = 0; i < totalWorkers; i++)
+    // {
+    //
+    //     char finalMessage[MAXIMUMBUFFER] = "";
+    //     for (size_t j = 0; j < LenOfList(queries); j++)
+    //     {
+    //         if(used[j] == true)continue;
+    //         char message[MAXIMUMBUFFER] = "";
+    //         char messageTemp[MAXIMUMBUFFER] = "";
+    //         // if(!strcmp(GetValue_Path(&queries,j)))
+    //         sprintf(message, "%s", GetValue_Path(&queries,j));
+    //         sprintf(messageTemp, "%s", GetValue_Path(&queries,j));
+    //         char * tok = NULL;
+    //         tok = strtok(message, ">");
+    //         tok = strtok(NULL," ");
+    //         char * arguments = strtok(NULL,"\n");
+    //         char * command = NULL;
+    //         command = strtok(messageTemp, ">");
+    //         command = strtok(NULL,"\n");
+    //
+    //         // printf("command : %s\n", command);
+    //
+    //         // printf("arguments: %s\n",arguments);
+    //         if(!strcmp(tok, "/listCountries\n"))
+    //         {
+    //
+    //             Request1();
+    //             used[j] = true;
+    //             // DeleteNode_Path(&queries,GetValue_Path(&queries,j));
+    //         }
+    //         else if(!strcmp(tok, "/diseaseFrequency"))
+    //         {
+    //             char * tokTemp = strtok(arguments," ");
+    //             tokTemp = strtok(NULL," ");
+    //             tokTemp = strtok(NULL," ");
+    //             tokTemp = strtok(NULL,"\n");
+    //             // printf("diseaseFrequency ---------------> %s\n",tokTemp);
+    //             if(tokTemp != NULL)
+    //             {
+    //                 if(!strcmp(tokTemp,GetValue_Path(&countries,i)))
+    //                 {
+    //                     if(j == 0)
+    //                     {
+    //                         sprintf(finalMessage,"%s\n",command);
+    //                     }
+    //                     else
+    //                     {
+    //                         strcat(finalMessage,command);
+    //                         strcat(finalMessage,"\n");
+    //                     }
+    //                     used[j] = true;
+    //                     queriesPerWorker[i]++;
+    //                 }
+    //             }
+    //             else
+    //             {
+    //                 if(j == 0)
+    //                 {
+    //                     sprintf(finalMessage,"%s\n",command);
+    //                 }
+    //                 else
+    //                 {
+    //                     strcat(finalMessage,command);
+    //                     strcat(finalMessage,"\n");
+    //                 }
+    //                 used[j] = true;
+    //                 queriesPerWorker[i]++;
+    //             }
+    //
+    //             // DeleteNode_Path(&queries,GetValue_Path(&queries,j));
+    //         }
+    //         else if(!strcmp(tok, "/topk-AgeRanges"))
+    //         {
+    //             char * tokTemp = strtok(arguments," ");
+    //
+    //             tokTemp = strtok(NULL," ");
+    //             // printf("tok->%s\n",tokTemp);
+    //             if(!strcmp(tokTemp,GetValue_Path(&countries,i)))
+    //             {
+    //                 if(j == 0)
+    //                 {
+    //                     sprintf(finalMessage,"%s\n",command);
+    //                 }
+    //                 else
+    //                 {
+    //                     strcat(finalMessage,command);
+    //                     strcat(finalMessage,"\n");
+    //
+    //                 }
+    //                 used[j] = true;
+    //                 queriesPerWorker[i]++;
+    //             }
+    //
+    //             // DeleteNode_Path(&queries,GetValue_Path(&queries,j));
+    //         }
+    //         else if(!strcmp(tok, "/numPatientAdmissions"))
+    //         {
+    //             char * tokTemp = strtok(arguments," ");
+    //             tokTemp = strtok(NULL," ");
+    //             tokTemp = strtok(NULL," ");
+    //             tokTemp = strtok(NULL,"\n");
+    //             if(tokTemp != NULL)
+    //             {
+    //                 if(!strcmp(tokTemp,GetValue_Path(&countries,i)))
+    //                 {
+    //                     if(j == 0)
+    //                     {
+    //                         sprintf(finalMessage,"%s\n",command);
+    //                     }
+    //                     else
+    //                     {
+    //                         strcat(finalMessage,command);
+    //                         strcat(finalMessage,"\n");
+    //
+    //                     }
+    //                     used[j] = true;
+    //                     queriesPerWorker[i]++;
+    //                 }
+    //             }
+    //             else
+    //             {
+    //                 if(j == 0)
+    //                 {
+    //                     sprintf(finalMessage,"%s\n",command);
+    //                 }
+    //                 else
+    //                 {
+    //                     strcat(finalMessage,command);
+    //                     strcat(finalMessage,"\n");
+    //                 }
+    //                 used[j] = true;
+    //                 queriesPerWorker[i]++;
+    //             }
+    //
+    //         }
+    //         else if(!strcmp(tok, "/searchPatientRecord"))
+    //         {
+    //             // char delimiters[] = " \n\t\r\v\f\n:,/.><[]{}|=+*@#$-";
+    //             // char * tok = NULL;
+    //             // tok = strtok(arguments, delimiters);
+    //
+    //             // searchPatientRecord(tok);
+    //             if(j == 0)
+    //             {
+    //                 sprintf(finalMessage,"%s\n",command);
+    //             }
+    //             else
+    //             {
+    //                 strcat(finalMessage,command);
+    //                 strcat(finalMessage,"\n");
+    //
+    //             }
+    //             used[j] = true;
+    //             queriesPerWorker[i]++;
+    //             // DeleteNode_Path(&queries,GetValue_Path(&queries,j));
+    //         }
+    //         else if(!strcmp(tok, "/numPatientDischarges"))
+    //         {
+    //             char * tokTemp = strtok(arguments," ");
+    //             tokTemp = strtok(NULL," ");
+    //             tokTemp = strtok(NULL," ");
+    //             tokTemp = strtok(NULL,"\n");
+    //             if(tokTemp != NULL)
+    //             {
+    //                 if(!strcmp(tokTemp,GetValue_Path(&countries,i)))
+    //                 {
+    //                     if(j == 0)
+    //                     {
+    //                         sprintf(finalMessage,"%s\n",command);
+    //                     }
+    //                     else
+    //                     {
+    //                         strcat(finalMessage,command);
+    //                         strcat(finalMessage,"\n");
+    //
+    //                     }
+    //                     used[j] = true;
+    //                     queriesPerWorker[i]++;
+    //                 }
+    //             }
+    //             else
+    //             {
+    //                 if(j == 0)
+    //                 {
+    //                     sprintf(finalMessage,"%s\n",command);
+    //                 }
+    //                 else
+    //                 {
+    //                     strcat(finalMessage,command);
+    //                     strcat(finalMessage,"\n");
+    //                 }
+    //                 used[j] = true;
+    //                 queriesPerWorker[i]++;
+    //             }
+    //             // DeleteNode_Path(&queries,GetValue_Path(&queries,j));
+    //         }
+    //
+    //     }
+    //     printf("WORKER:%ld ---> \n%s\n",i,finalMessage);
+    //     if(strcmp(finalMessage, ""))
+    //     {
+    //         write(GetItem_MyVector(bufferWorker,i), finalMessage ,strlen(finalMessage));
+    //
+    //     }
+    // }
+    //
+    //
+    // for (long i = 0; i < totalWorkers; i++)
+    // {
+    //     // printf("Worker:%ld -> %ld queries\n",i,queriesPerWorker[i]++);
+    //     //
+    //     for (long j = 0; j < queriesPerWorker[i]; j++)
+    //     {
+    //         char temp[MAXIMUMBUFFER] = "";
+    //         read(GetItem_MyVector(bufferWorker,i),  temp ,MAXIMUMBUFFER);
+    //         printf("Worker:%ld\n\tQuery:%s\n",i,temp);
+    //     }
+    //
+    // }
+    //
+    //
+    //     char finalMessage[MAXIMUMBUFFER] = "";
+    //
+    //     for (long j = 0; j < queriesPerWorker[i]; j++)
+    //     {
+    //
+    //         char message[MAXIMUMBUFFER] = "";
+    //         sprintf(message, "%s", GetValue_Path(&queries,index));
+    //         char * tok = strtok(message, ">");
+    //         tok = strtok(NULL,"\n");
+    //         if(j == 0)
+    //         {
+    //             sprintf(finalMessage,"%s\n",tok);
+    //         }
+    //         else
+    //         {
+    //             strcat(finalMessage,tok);
+    //             strcat(finalMessage,"\n");
+    //
+    //         }
+    //         index++;
+    //     }
+    //     printf("%s\n",finalMessage);
+    //     // sprintf(message, "%s", GetValue_Path(&queries,i));
+    //     // char * tok = strtok(message, ">");
+    //     // tok = strtok(NULL,"\n");
+    //     // strcpy(finalMessage,tok);
+    //     // printf("%s\n", tok);
+    //     // sprintf(message,"Heelo from %ld \n", i);
+    //     write(GetItem_MyVector(bufferWorker,i), finalMessage ,strlen(finalMessage));
+    //
+    //     for (size_t j = 0; j < queriesPerWorker[i]; j++) {
+    //         /* code */
+    //         char temp[MAXIMUMBUFFER] = "";
+    //         read(GetItem_MyVector(bufferWorker,i),  temp ,MAXIMUMBUFFER);
+    //         printf("Worker:%ld -> query :%ld\n%s\n",i,j,temp);
+    //     }
+    //     // read(GetItem_MyVector(bufferWorker,i),  temp ,MAXIMUMBUFFER);
+    //     // printf("%s\n",temp);
+    //     // if(!strcmp(temp,"Accepted"))
+    //     // {
+    //     //     printf("Worker:%ld --> Transfer has been completed!\n",i);
+    //     // }
+    //
+    //
+    // }
+
+
 
     // write(GetItem_MyVector(bufferWorker,randomPick), message,strlen(message));
     // printf("%s\n",message);
     // Request1();
-    char * tok;
-    char delimiters[] = " \n\t\r\v\f\n:,.><[]{}|=+*@#$";
-    char * temp = (char *)malloc(sizeof(char) * strlen("/diseaseFrequency COVID-2019 10-10-2010 10-10-2020")+ 1);
-    strcpy(temp,"/diseaseFrequency COVID-2019 10-10-2010 10-10-2020");
-    tok = strtok(temp,delimiters);
-    printf("%s\n",tok);
-    Request2(tok);
+    // char * tok;
+    // char delimiters[] = " \n\t\r\v\f\n:,.><[]{}|=+*@#$";
+    // char * temp = (char *)malloc(sizeof(char) * strlen("/diseaseFrequency COVID-2019 10-10-2010 10-10-2020")+ 1);
+    // strcpy(temp,"/diseaseFrequency COVID-2019 10-10-2010 10-10-2020");
+    // tok = strtok(temp,delimiters);
+    // printf("%s\n",tok);
+    // Request2(tok);
     while(1){}
-    // for (long i = 0; i < LenOfList(&queries); i++)
-    // {
-    //     Reqiest
-    // }
+
     return 0;
 }
