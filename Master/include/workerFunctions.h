@@ -28,7 +28,7 @@ void numPatientAdmissions(char * arguments);
 void numPatientDischarges(char * arguments);
 void ReadingFiles(char * path);
 
-void ReadRequests(char * path);
+void ReadRequests();
 void Elimination();
 
 #endif
