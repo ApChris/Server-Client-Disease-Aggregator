@@ -186,7 +186,7 @@ void listCountries(char * path)
 
     char messageStatistics[MAXBUFFER] = "";
 
-    sprintf(messageStatistics, "%s %ld", workerCountry, (long)getpid());
+    sprintf(messageStatistics, "%s %ld\n", workerCountry, (long)getpid());
     WriteToNamedPipe(fileDescriptorW,messageStatistics);
     // write(workerSock,messageStatistics,strlen(messageStatistics));
 
@@ -860,149 +860,19 @@ void Elimination()
 
 
 
-void ReadRequests(char * path)
+void ReadRequests()
 {
-    char message[MAXIMUMBUFFER] = "";
-    // select()
-    fd_set set;
-    struct timeval timeOut;
-    long rv;
-    long lines = 0;
-    char * tok = NULL;
-    char delimiters[] = " \n\t\r\v\f\n:,/.><[]{}|=+*@#$-";
+    char message[MAXIMUMBUFFER*4] = "";
 
-    if (read(workerSock, message, MAXIMUMBUFFER) < 0)
+
+    printf("%ld\n", workerSock);
+    if (read(workerSock, message, MAXIMUMBUFFER*4) < 0)
     {
-        perror("worker read");
+        perror("ReadRequests read");
         exit(EXIT_FAILURE);
     }
-    // if (write(workerSock, "Accepted", strlen("Accepted") + 1) < 0)
-    // {
-    //     perror("worker write");
-    //     exit(EXIT_FAILURE);
-    // }
-    printf("--------Worker: %ld-------\n%s\n", processID,message);
-    for (long i = 0; i < strlen(message); i++)
-    {
-        if(message[i] == '\n')
-        {
-            lines++;
-        }
-    }
-    tok = strtok(message, "\n");
-    PushNode_Path(&workerQueries,message);
-    // printf("%s\n",tok);
-    for (long i = 1; i < lines; i++)
-    {
-        tok = strtok(NULL,"\n");
-        PushNode_Path(&workerQueries,tok);
-        // printf("%s\n",tok);
-    }
-    // PrintList_Path(&workerQueries);
-    for (long i = 0; i < lines; i++)
-    {
-        char * command = (char *)malloc(sizeof(char)*MAXIMUMBUFFER);
-        char * arguments;
-        char * tok = NULL;
-        strcpy(command, GetValue_Path(&workerQueries,i));
-        command = strtok(command," ");
-        arguments = strtok(NULL,"\n");
-            // printf("-->%s\n",command);
-            // printf("------->%s\n",arguments);
-            if(!strcmp(command, "/listCountries"))
-            {
+    printf("%ld\n", workerSock);
+    WriteToNamedPipe(fileDescriptorW,message);
 
-            }
-            else if(!strcmp(command, "/diseaseFrequency"))
-            {
-                diseaseFrequency(arguments);
-
-            }
-            else if(!strcmp(command, "/topk-AgeRanges"))
-            {
-
-                topkAgeRanges(arguments);
-
-            }
-            else if(!strcmp(command, "/numPatientAdmissions"))
-            {
-                numPatientAdmissions(arguments);
-
-            }
-            else if(!strcmp(command, "/searchPatientRecord"))
-            {
-                char delimiters[] = " \n\t\r\v\f\n:,/.><[]{}|=+*@#$-";
-                char * tok = NULL;
-                tok = strtok(arguments, delimiters);
-
-                searchPatientRecord(tok);
-
-            }
-            else if(!strcmp(command, "/numPatientDischarges"))
-            {
-                numPatientDischarges(arguments);
-
-            }
-            // else if(!strcmp(command, "/reCreateWorker"))
-            // {
-            //     reCreateWorker();
-            // }
-            // else if(!strcmp(command, "/ReadRequests"))
-            // {
-            //     char * path;
-            //     // char * procID;
-            //     char delimiters[] = " \n\t\r\v\f\n:,/.><[]{}|=+*@#$-";
-            //     char * tok = NULL;
-            //     tok = strtok(arguments, delimiters);
-            //     // procID = (char *)malloc(sizeof(char)* strlen(tok));
-            //     // strcpy(procID,tok);
-            //     tok = strtok(NULL, " \n");
-            //     path = (char *)malloc(sizeof(char)* strlen(tok));
-            //     strcpy(path,tok);
-            //     // printf("%s\n",path);
-            //     ReadRequests(path);
-            // }
-            // else
-            // {
-            //     printf("Wrong input\n");
-            // }
-
-            // free(command);
-
-    }
-    printf("%ld\n",lines);
-    // while(1)
-    // {
-    //     FD_ZERO(&set);
-    //     FD_SET(workerSock, &set);
-    //
-    //     timeOut.tv_sec = 10;
-    //     timeOut.tv_usec = 0;
-    //
-    //     rv = select(workerSock + 1, &set, NULL, NULL, &timeOut);
-    //
-    //     if(rv == -1)
-    //     {
-    //         perror("Error select");
-    //         exit(EXIT_FAILURE);
-    //     }
-    //     else if(rv == 0)
-    //     {
-    //         // if(totalWorkers == 0)
-    //         // {
-    //             printf("--> 10 seconds have passed -> Still listening for Workers\n");
-    //         // }
-    //         // else
-    //         // {
-    //         //     printf("--> 10 seconds have passed -> Thread is moving on Clients\n");
-    //         //     break;
-    //         //
-    //         // }
-    //     }
-    //     else
-    //     {
-    //
-    //     }
-    // }
 
 }
