@@ -101,14 +101,14 @@ void SigHandler()
         }
         else if(!strcmp(command, "/ReadRequests"))
         {
-            char * path;
-            char delimiters[] = " \n\t\r\v\f\n:,/.><[]{}|=+*@#$-";
-            char * tok = NULL;
-            tok = strtok(arguments,delimiters);
-            tok = strtok(NULL, " \n");
-            path = (char *)malloc(sizeof(char) * strlen(tok));
-            strcpy(path,tok);
-            ReadRequests(path);
+            // char * path;
+            // char delimiters[] = " \n\t\r\v\f\n:,/.><[]{}|=+*@#$-";
+            // char * tok = NULL;
+            // tok = strtok(arguments,delimiters);
+            // tok = strtok(NULL, " \n");
+            // path = (char *)malloc(sizeof(char) * strlen(tok));
+            // strcpy(path,tok);
+            ReadRequests();
         }
         else if(!strcmp(command, "/reCreateWorker"))
         {
