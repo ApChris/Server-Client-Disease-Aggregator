@@ -9,6 +9,8 @@ extern Node * readNamedPipeList;
 extern long flagEliminate;
 extern PathNode * subDirectoriesPathList;
 
+extern PathNode * queries;
+extern PathNode * queriesResults;
 
 void Request_1()
 {
@@ -24,7 +26,8 @@ void Request_1()
 
     }
 
-    char result[MAXIMUMBUFFER];
+    char result[MAXIMUMBUFFER] = "";
+    char resultFinal[MAXIMUMBUFFER] = "/listCountries\n";
     int bytes;
     for (long i = 0; i < totalWorkers; i++)
     {
@@ -34,14 +37,17 @@ void Request_1()
 
         }while((bytes=ReadFromNamedPipe(GetValue(&readNamedPipeList,i), result))<=0);
         printf("%s\n",result);
+        strcat(resultFinal,result);
     }
-
+    PushNode_Path(&queriesResults, resultFinal);
 
 }
 
 void Request_2(char * tok)
 {
     char message[MAXIMUMBUFFER];
+    char resultFinal[MAXIMUMBUFFER] = "";
+    long flag = 0;
     char delimiters[] = " \n\t\r\v\f\n-:,/.><[]{}|-=+*@#$;";
 
     char * diseaseID;
@@ -97,10 +103,11 @@ void Request_2(char * tok)
 
     if(tok == NULL)
     {
-
+        flag = 1;
         for (long i = 0; i < totalWorkers; i++)
         {
             sprintf(message,"/diseaseFrequency %s %ld-%ld-%ld %ld-%ld-%ld",diseaseID, date1 -> day, date1 -> month, date1 -> year,date2 -> day, date2 -> month, date2 -> year);
+            sprintf(resultFinal,"/diseaseFrequency %s %ld-%ld-%ld %ld-%ld-%ld\n",diseaseID, date1 -> day, date1 -> month, date1 -> year,date2 -> day, date2 -> month, date2 -> year);
 
             WriteToNamedPipe(GetValue(&writeNamedPipeList,i), message);
             kill(GetValue(&workersPidList,i),SIGUSR1);
@@ -125,6 +132,7 @@ void Request_2(char * tok)
             if(!strcmp(path,country))
             {
                 sprintf(message,"/diseaseFrequency %s %ld-%ld-%ld %ld-%ld-%ld %s",diseaseID, date1 -> day, date1 -> month, date1 -> year,date2 -> day, date2 -> month, date2 -> year, country);
+                sprintf(resultFinal,"/diseaseFrequency %s %ld-%ld-%ld %ld-%ld-%ld %s\n",diseaseID, date1 -> day, date1 -> month, date1 -> year,date2 -> day, date2 -> month, date2 -> year, country);
 
                 WriteToNamedPipe(GetValue(&writeNamedPipeList,i), message);
                 kill(GetValue(&workersPidList,i),SIGUSR1);
@@ -138,6 +146,7 @@ void Request_2(char * tok)
 
 
     char result[MAXIMUMBUFFER];
+    char resultTemp[MAXIMUMBUFFER] = "";
     int bytes;
     long res = 0;
     for (long i = 0; i < totalWorkers; i++)
@@ -150,6 +159,9 @@ void Request_2(char * tok)
         res += atol(result);
 
     }
+    sprintf(resultTemp,"%ld\n",res);
+    strcat(resultFinal,resultTemp);
+    PushNode_Path(&queriesResults,resultFinal);
     printf("%ld\n",res);
 }
 
@@ -230,15 +242,11 @@ void Request_3(char * tok)
         }
 
     }
-    //
-    //
-    //
-    //
-    // free(date1);
-    // free(date2);
-    //
+
 
     char result[MAXBUFFER];
+    char resultFinal[MAXIMUMBUFFER] = "";
+    sprintf(resultFinal,"/topk-AgeRanges %s %s %s %ld-%ld-%ld %ld-%ld-%ld\n",k, country, diseaseID, date1 -> day, date1 -> month, date1 -> year,date2 -> day, date2 -> month, date2 -> year);
     int bytes;
 
     for (long i = 0; i < totalWorkers; i++)
@@ -259,11 +267,12 @@ void Request_3(char * tok)
                 }while((bytes=ReadFromNamedPipe(GetValue(&readNamedPipeList,i), result))<=0);
 
                 printf("%s\n",result);
+                strcat(resultFinal,result);
             }
 
 
     }
-
+    PushNode_Path(&queriesResults,resultFinal);
 
 }
 
@@ -273,7 +282,7 @@ void Request_4(char * recordID)
 {
 
     char message[MAXIMUMBUFFER];
-
+    char resultFinal[MAXIMUMBUFFER] = "";
     for (long i = 0; i < totalWorkers; i++)
     {
         sprintf(message,"/searchPatientRecord %s",recordID);
@@ -294,6 +303,7 @@ void Request_4(char * recordID)
         }while((bytes=ReadFromNamedPipe(GetValue(&readNamedPipeList,i), result))<=0);
         if(strcmp(result,"Not Found"))
         {
+            sprintf(resultFinal,"/searchPatientRecord %s\n%s\n",recordID,result);
             printf("%s\n", result);
         }
         else
@@ -304,16 +314,19 @@ void Request_4(char * recordID)
     }
     if(counterNotFound == totalWorkers)
     {
+        sprintf(resultFinal,"/searchPatientRecord %s\n%s\n",recordID,result);
         printf("%s\n",result);
     }
+    PushNode_Path(&queriesResults,resultFinal);
 }
 
 
 void Request_5(char * tok)
 {
     char message[MAXIMUMBUFFER];
+    char resultFinal[MAXIMUMBUFFER] = "";
     char delimiters[] = " \n\t\r\v\f\n-:,/.><[]{}|-=+*@#$;";
-
+    long flag = 0;
     char * diseaseID;
 
     tok = strtok(NULL," ");
@@ -372,7 +385,8 @@ void Request_5(char * tok)
         for (long i = 0; i < totalWorkers; i++)
         {
 
-            sprintf(message,"/numPatientAdmissions %s %ld-%ld-%ld %ld-%ld-%ld",diseaseID, date1 -> day, date1 -> month, date1 -> year,date2 -> day, date2 -> month, date2 -> year);
+            sprintf(message,"/numPatientAdmissions %s %ld-%ld-%ld %ld-%ld-%ld\n",diseaseID, date1 -> day, date1 -> month, date1 -> year,date2 -> day, date2 -> month, date2 -> year);
+            sprintf(resultFinal,"/numPatientAdmissions %s %ld-%ld-%ld %ld-%ld-%ld\n",diseaseID, date1 -> day, date1 -> month, date1 -> year,date2 -> day, date2 -> month, date2 -> year);
 
             WriteToNamedPipe(GetValue(&writeNamedPipeList,i), message);
             kill(GetValue(&workersPidList,i),SIGUSR1);
@@ -396,7 +410,8 @@ void Request_5(char * tok)
 
             if(!strcmp(path,country))
             {
-                sprintf(message,"/numPatientAdmissions %s %ld-%ld-%ld %ld-%ld-%ld %s",diseaseID, date1 -> day, date1 -> month, date1 -> year,date2 -> day, date2 -> month, date2 -> year, country);
+                sprintf(message,"/numPatientAdmissions %s %ld-%ld-%ld %ld-%ld-%ld %s\n",diseaseID, date1 -> day, date1 -> month, date1 -> year,date2 -> day, date2 -> month, date2 -> year, country);
+                sprintf(resultFinal,"/numPatientAdmissions %s %ld-%ld-%ld %ld-%ld-%ld %s\n",diseaseID, date1 -> day, date1 -> month, date1 -> year,date2 -> day, date2 -> month, date2 -> year, country);
 
                 WriteToNamedPipe(GetValue(&writeNamedPipeList,i), message);
                 kill(GetValue(&workersPidList,i),SIGUSR1);
@@ -411,10 +426,13 @@ void Request_5(char * tok)
 
 
     char result[MAXIMUMBUFFER];
+
     int bytes;
     long res = 0;
+
     for (long i = 0; i < totalWorkers; i++)
     {
+        char resultTemp[MAXIMUMBUFFER] = "";
         do
         {
             usleep(100);
@@ -431,17 +449,24 @@ void Request_5(char * tok)
         tok = strtok(NULL, delimiters);
         if(!country)
         {
+
             printf("%s %ld\n",tok, atol(result));
+            sprintf(resultTemp,"%s %ld\n",tok, atol(result));
+            strcat(resultFinal,resultTemp);
         }
         else
         {
             if(!strcmp(country,tok))
             {
                 printf("%s %ld\n",tok, atol(result));
+                sprintf(resultTemp,"%s %ld\n",tok, atol(result));
+                strcat(resultFinal,resultTemp);
             }
         }
 
+
     }
+    PushNode_Path(&queriesResults, resultFinal);
 
 }
 
@@ -450,6 +475,7 @@ void Request_5(char * tok)
 void Request_6(char * tok)
 {
     char message[MAXIMUMBUFFER];
+    char resultFinal[MAXIMUMBUFFER] = "";
     char delimiters[] = " \n\t\r\v\f\n-:,/.><[]{}|-=+*@#$;";
 
     char * diseaseID;
@@ -553,6 +579,7 @@ void Request_6(char * tok)
     long res = 0;
     for (long i = 0; i < totalWorkers; i++)
     {
+        char resultTemp[MAXIMUMBUFFER] = "";
         do
         {
             usleep(100);
@@ -566,20 +593,26 @@ void Request_6(char * tok)
         tok = strtok(currentCountry, delimiters);
         tok = strtok(NULL, delimiters);
         tok = strtok(NULL, delimiters);
-                tok = strtok(NULL, delimiters);
+        tok = strtok(NULL, delimiters);
         if(!country)
         {
             printf("%s %ld\n",tok, atol(result));
+            sprintf(resultTemp,"%s %ld\n",tok, atol(result));
+            strcat(resultFinal,resultTemp);
         }
         else
         {
             if(!strcmp(country,tok))
             {
                 printf("%s %ld\n",tok, atol(result));
+                sprintf(resultTemp,"%s %ld\n",tok, atol(result));
+                strcat(resultFinal,resultTemp);
             }
         }
 
     }
+
+    PushNode_Path(&queriesResults, resultFinal);
 
 }
 
@@ -659,19 +692,26 @@ long Read_Requests()
     char * request = NULL;
     size_t length;
     long read;
-    char messageFinal[MAXIMUMBUFFER] = "/topk-AgeRanges 3 Greece COVID-2019 10-10-2010 10-10-2020\n";
-    char message1[MAXIMUMBUFFER] = "/diseaseFrequency MERS-COV 10-10-2010 10-10-2020\n";
-    char message2[MAXIMUMBUFFER] = "/listCountries\n";
-    char message3[MAXIMUMBUFFER] = "/numPatientAdmissions COVID-2019 10-10-2010 10-10-2020\n";
+    for (long i = 0; i < LenOfList(queries); i++)
+    {
+        Read_Requests_Parse(GetValue_Path(&queries,i));
+    }
 
-    printf("%s\n",messageFinal);
-    Read_Requests_Parse(messageFinal);
-    printf("%s\n",message1);
-    Read_Requests_Parse(message1);
-    printf("%s\n",message2);
-    Read_Requests_Parse(message2);
-    printf("%s\n",message3);
-    Read_Requests_Parse(message3);
+    printf("---------------------\n");
+    PrintList_Path(&queriesResults);
+    // char messageFinal[MAXIMUMBUFFER] = "/topk-AgeRanges 3 Greece COVID-2019 10-10-2010 10-10-2020\n";
+    // char message1[MAXIMUMBUFFER] = "/diseaseFrequency MERS-COV 10-10-2010 10-10-2020\n";
+    // char message2[MAXIMUMBUFFER] = "/listCountries\n";
+    // char message3[MAXIMUMBUFFER] = "/numPatientAdmissions COVID-2019 10-10-2010 10-10-2020\n";
+    //
+    // printf("%s\n",messageFinal);
+    // Read_Requests_Parse(messageFinal);
+    // printf("%s\n",message1);
+    // Read_Requests_Parse(message1);
+    // printf("%s\n",message2);
+    // Read_Requests_Parse(message2);
+    // printf("%s\n",message3);
+    // Read_Requests_Parse(message3);
     // printf("%s\n",message);
     // long lines = 0;
     // for (long i = 0; i < strlen(message); i++)
