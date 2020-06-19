@@ -12,7 +12,8 @@ Node * readNamedPipeList = NULL;
 long flagEliminate = 0;
 PathNode * subDirectoriesPathList = NULL;
 
-
+PathNode * queries = NULL;
+PathNode * queriesResults = NULL;
 long servPort;
 char * servIP;
 
@@ -159,9 +160,10 @@ int main(int argc, char const *argv[])
 
     printf("Requests\n");
 
-    // while(!Read_Requests()){}
+    PrintList(&workersPidList);
+    SetWorkersForRequests();
     Read_Requests();
-    // SetWorkersForRequests();
-    while(1){}
+
+    // while(1){};
     return 0;
 }
