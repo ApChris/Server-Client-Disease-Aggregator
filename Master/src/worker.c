@@ -28,7 +28,7 @@ long workerSock;
 
 void SigHandler()
 {
-    char buffer[MAXIMUMBUFFER] = "";
+    char buffer[MAXIMUMBUFFER*4] = "";
     ReadFromNamedPipe(fileDescriptorR, buffer);
     char * command = (char *)malloc(sizeof(char)*50);
     char * arguments;
@@ -101,14 +101,19 @@ void SigHandler()
         }
         else if(!strcmp(command, "/ReadRequests"))
         {
-            // char * path;
-            // char delimiters[] = " \n\t\r\v\f\n:,/.><[]{}|=+*@#$-";
-            // char * tok = NULL;
-            // tok = strtok(arguments,delimiters);
-            // tok = strtok(NULL, " \n");
-            // path = (char *)malloc(sizeof(char) * strlen(tok));
-            // strcpy(path,tok);
+
             ReadRequests();
+        }
+        else if(!strcmp(command, "Requests"))
+        {
+            char message[MAXIMUMBUFFER];
+            read(workerSock,message,MAXIMUMBUFFER);
+            if (write(workerSock, buffer, MAXIMUMBUFFER*4) < 0)
+            {
+                perror("Requests write");
+                exit(EXIT_FAILURE);
+            }
+
         }
         else if(!strcmp(command, "/reCreateWorker"))
         {
@@ -131,7 +136,7 @@ int main(int argc, const char *argv[])
 
     static struct sigaction terminatingAction;
     static struct sigaction answerAction;
-    static struct sigaction answerActionServer;
+
 
     terminatingAction.sa_handler = Elimination;
     sigfillset(&(terminatingAction.sa_mask));
@@ -142,9 +147,6 @@ int main(int argc, const char *argv[])
     sigfillset(&(answerAction.sa_mask));
     sigaction(SIGUSR1, &answerAction, NULL);
 
-    // answerActionServer.sa_handler = SigHandlerServer;
-    // sigfillset(&(answerActionServer.sa_mask));
-    // sigaction(SIGINT, &answerActionServer, NULL);
 
 
     printf("WORKER has been created with pid: %ld \n",(long)getpid());
@@ -173,7 +175,7 @@ int main(int argc, const char *argv[])
     // For gethostbyname
     struct hostent * gtHName;
 
-    char message[MAXIMUMBUFFER] = "";
+
 
     // Create sockets
     if((workerSock = socket(PF_INET, SOCK_STREAM, 0)) == -1)
