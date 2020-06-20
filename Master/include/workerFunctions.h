@@ -20,7 +20,7 @@
 SumStatistics * FillStructures(const char * patientRecordsFile, Hash * diseaseHash, Hash * patientHash, Date * date, char * country);
 void reCreateWorker();
 void Print_Input(char * patientRecordsFile, long diseaseHashtableNumOfEntries, long countryHashtableNumOfEntries, long bucketSize);
-void listCountries(char * path);
+void listCountries();
 void diseaseFrequency(char * arguments);
 void topkAgeRanges(char * arguments);
 void searchPatientRecord(char * recordID);
@@ -29,6 +29,7 @@ void numPatientDischarges(char * arguments);
 void ReadingFiles(char * path);
 
 void ReadRequests();
+void SendRequests();
 void Elimination();
 
 #endif
