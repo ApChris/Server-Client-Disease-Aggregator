@@ -99,7 +99,7 @@ int main(int argc, char const *argv[])
     {
         threadsIDS[i] = i;
     }
-    //
+
     // create main Thread
     if((thread = (pthread_t *)malloc(sizeof(pthread_t))) == NULL)
     {
@@ -113,76 +113,76 @@ int main(int argc, char const *argv[])
 
     }
 
-    if(pthread_join(GetItem_MyVector(threadsVector,0), NULL))
+    if(pthread_join((long)GetItem_MyVector(threadsVector,0), NULL))
     {
         perror("Client: perror has been failed:");
         exit(EXIT_FAILURE);
     }
-    printf("Rest threads are going to start!\n");
+    printf("-------Statistics-------\n\n");
     for (long i = 1; i <= totalWorkers; i++)
     {
-        // printf("totalWorkers %ld --> totalClients %ld %ld\n",totalWorkers,totalClients,i);
-        // if(currentWorkers < totalWorkers)
-        // {
-            if((thread = (pthread_t *)malloc(sizeof(pthread_t))) == NULL)
-            {
-                perror("Pthread malloc has been failed!:");
-                exit(EXIT_FAILURE);
-            }
-            else
-            {
-                pthread_create(&thread, NULL, WorkersThreadJob ,(void *)&threadsIDS[i]);
 
-                PushBack_MyVector(threadsVector, thread);
-                pthread_mutex_lock(&mutex);
-                currentWorkers++;
-                pthread_mutex_unlock(&mutex);
-            }
+        if((thread = (pthread_t *)malloc(sizeof(pthread_t))) == NULL)
+        {
+            perror("Pthread malloc has been failed!:");
+            exit(EXIT_FAILURE);
         }
+        else
+        {
+            pthread_create(&thread, NULL, WorkersThreadJob ,(void *)&threadsIDS[i]);
+
+            PushBack_MyVector(threadsVector, thread);
+            pthread_mutex_lock(&mutex);
+            currentWorkers++;
+            pthread_mutex_unlock(&mutex);
+        }
+    }
     for (long i = 1; i <= totalWorkers; i++)
     {
-        if(pthread_join(GetItem_MyVector(threadsVector,i), NULL))
+        if(pthread_join((long)GetItem_MyVector(threadsVector,i), NULL))
         {
             perror("Client: perror has been failed:");
             exit(EXIT_FAILURE);
         }
     }
 
-        for (long i = totalWorkers + 1; i <= totalWorkers + totalClients; i++)
+    for (long i = totalWorkers + 1; i <= totalWorkers + totalClients; i++)
+    {
+        if((thread = (pthread_t *)malloc(sizeof(pthread_t))) == NULL)
         {
-                if((thread = (pthread_t *)malloc(sizeof(pthread_t))) == NULL)
-                {
-                    perror("Pthread malloc has been failed!:");
-                    exit(EXIT_FAILURE);
-                }
-                else
-                {
-                    pthread_create(&thread, NULL, ClientsThreadJob ,(void *)&threadsIDS[i]);
-
-                    PushBack_MyVector(threadsVector, thread);
-                    pthread_mutex_lock(&mutex);
-                    currentClients++;
-                    pthread_mutex_unlock(&mutex);
-                }
+            perror("Pthread malloc has been failed!:");
+            exit(EXIT_FAILURE);
         }
-
-        for (long i = totalWorkers + 1; i <= totalWorkers + totalClients; i++)
+        else
         {
-            if(pthread_join(GetItem_MyVector(threadsVector,i), NULL))
-            {
-                perror("Client: perror has been failed:");
-                exit(EXIT_FAILURE);
-            }
+            pthread_create(&thread, NULL, ClientsThreadJob ,(void *)&threadsIDS[i]);
+
+            PushBack_MyVector(threadsVector, thread);
+            pthread_mutex_lock(&mutex);
+            currentClients++;
+            pthread_mutex_unlock(&mutex);
         }
+    }
+
+    for (long i = totalWorkers + 1; i <= totalWorkers + totalClients; i++)
+    {
+        if(pthread_join((long)GetItem_MyVector(threadsVector,i), NULL))
+        {
+            perror("Client: perror has been failed:");
+            exit(EXIT_FAILURE);
+        }
+    }
 
 
-    printf("END\n");
+    printf("-----Statistics printing has been terminated--------\n\n");
 
+    printf("-----Requests--------\n\n");
     PrintList_Path(&queries);
-    PrintList_Path(&countries);
+    printf("-----Requests printing has been terminated--------\n\n");
+    // PrintList_Path(&countries);
 
     char finalMessage[MAXIMUMBUFFER*4] = "";
-    for (size_t j = 0; j < LenOfList(queries); j++)
+    for (long j = 0; j < LenOfList(queries); j++)
     {
         char message[MAXIMUMBUFFER*4] = "";
         sprintf(message, "%s", GetValue_Path(&queries,j));
@@ -200,19 +200,26 @@ int main(int argc, char const *argv[])
         }
 
     }
-    printf("%s\n",finalMessage);
+    // printf("%s\n",finalMessage);
+    printf("-----Results--------\n");
+    for (long i = 0; i < totalWorkers; i++)
+    {
+        write((long)GetItem_MyVector(bufferWorker,i), finalMessage ,strlen(finalMessage));
+    }
+    long flag = 0;
+    for (long i = 0; i < totalWorkers; i++)
+    {
+        char finalResult[MAXIMUMBUFFER*4] = "";
+        long bytes = read((long)GetItem_MyVector(bufferWorker,i), finalResult, MAXIMUMBUFFER*4);
+        if(bytes != 0 && flag == 0)
+        {
+            printf("%s\n",finalResult);
 
-    for (size_t i = 0; i < totalWorkers; i++)
-    {
-        write(GetItem_MyVector(bufferWorker,i), finalMessage ,strlen(finalMessage));
+            flag = 1;
+            break;
+        }
     }
-    char finalResult[MAXIMUMBUFFER*4] = "";
-    for (size_t i = 0; i < totalWorkers; i++)
-    {
-        read(GetItem_MyVector(bufferWorker,i), finalResult ,MAXIMUMBUFFER*4);
-    }
-    printf("%s\n",finalResult);
-    // // while(1){};
+    printf("-----Results printing has been terminated--------\n\n");
 
     return 0;
 }
