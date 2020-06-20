@@ -5,7 +5,11 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <pthread.h>
+#include <stdlib.h>
 #include <netdb.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/stat.h>
 #include <netinet/in.h>
 #include "../../WhoServer/include/myVector.h"
 #include "../../Master/include/list.h"
@@ -162,7 +166,7 @@ int main(int argc, char const *argv[])
     pthread_cond_signal(&condinationVariable);
     for (long i = 0; i < LenOfList(queries); i++)
     {
-        if(pthread_join(GetItem_MyVector(threadsVector,i), NULL))
+        if(pthread_join((long)GetItem_MyVector(threadsVector,i), NULL))
         {
             perror("Client: perror has been failed:");
             exit(EXIT_FAILURE);
