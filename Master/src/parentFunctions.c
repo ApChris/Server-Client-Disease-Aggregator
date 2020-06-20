@@ -85,14 +85,16 @@ void SetWorkersForRequests()
 
         long lines = 0;
         char * tok = NULL;
-        for (long i = 0; i < strlen(result); i++)
+        for (size_t i = 0; i < strlen(result); i++)
         {
            if(result[i] == '\n')
            {
                lines++;
            }
         }
-        printf("-------------------------\n");
+        printf("-->%s\n", result);
+        PrintList_Path(&queriesResults);
+        // printf("-------------------------\n");
         tok = strtok(result, "\n");
         PushNode_Path(&queries,result);
         // printf("%s\n",tok);
@@ -102,16 +104,16 @@ void SetWorkersForRequests()
            PushNode_Path(&queries,tok);
            // printf("%s\n",tok);
         }
-        printf("-------------------------\n");
+        // printf("----------EDWW---------------\n");
         // PrintList_Path(&queries);
-
-        // printf("%s\n",result);
-        printf("--------------------------------------\n");
-        char messageSend[MAXIMUMBUFFER*4] = "/SendRequests\n";
-        for (size_t i = 0; i < LenOfList(&queries); i++)
-        {
-            strcat(messageSend,GetValue_Path(&queries,i));
-        }
+        //
+        // // printf("%s\n",result);
+        // printf("--------------------------------------\n");
+        // char messageSend[MAXIMUMBUFFER*4] = "/SendRequests\n";
+        // for (size_t i = 0; i < LenOfList(&queries); i++)
+        // {
+        //     strcat(messageSend,GetValue_Path(&queries,i));
+        // }
 
         // // for every worker
         // for (long i = 0; i < totalWorkers; i++)
