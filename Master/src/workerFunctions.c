@@ -181,7 +181,7 @@ void Print_Input(char * patientRecordsFile, long diseaseHashtableNumOfEntries, l
 
 
 
-void listCountries(char * path)
+void listCountries()
 {
 
     char messageStatistics[MAXBUFFER] = "";
@@ -875,4 +875,18 @@ void ReadRequests()
     WriteToNamedPipe(fileDescriptorW,message);
 
 
+}
+
+
+void SendRequests()
+{
+    char message[MAXIMUMBUFFER*4] = "";
+
+    ReadFromNamedPipe(fileDescriptorR,message);
+    printf("%s\n",message);
+    if (write(workerSock, message, MAXIMUMBUFFER*4) < 0)
+    {
+        perror("SendRequests write");
+        exit(EXIT_FAILURE);
+    }
 }
