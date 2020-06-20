@@ -289,12 +289,12 @@ void * ClientsThreadJob(void * argp)
     long * id = argp;
     char message[MAXIMUMBUFFER] = "";
     pthread_mutex_lock(&mutex);
-    printf("-----------------------------------------------> edwww\n");
+    // printf("-----------------------------------------------> edwww\n");
     long bytes = read(GetItem_MyVector(bufferClient,indexOfVectorC), message, MAXIMUMBUFFER);
 
     message[bytes] = '\0';
 
-    printf("Server Thread %ld received from --->%s\n", (long)GetItem_MyVector(bufferClient,indexOfVectorC), message);
+    // printf("Server Thread %ld received from --->%s\n", (long)GetItem_MyVector(bufferClient,indexOfVectorC), message);
     PushNode_Path(&queries,message);
     write(GetItem_MyVector(bufferClient,indexOfVectorC), "Completed", strlen("Completed\0"));
 
