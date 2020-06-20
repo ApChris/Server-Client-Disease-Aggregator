@@ -1,6 +1,0 @@
-#ifndef __REQUESTSFROMSERVER_H_
-#define __REQUESTSFROMSERVER_H_
-
-
-
-#endif
