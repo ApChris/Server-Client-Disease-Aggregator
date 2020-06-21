@@ -259,7 +259,6 @@ void diseaseFrequency(char * arguments)
         sprintf(message,"%ld\n", res);
         WriteToNamedPipe(fileDescriptorW,message);
 
-        // write(workerSock,message,strlen(message));
     }
     // user gave a country
     else
@@ -274,7 +273,7 @@ void diseaseFrequency(char * arguments)
         char message[MAXBUFFER];
         sprintf(message,"%ld\n",tResult);
         WriteToNamedPipe(fileDescriptorW,message);
-        // write(workerSock,message,strlen(message));
+
         free(country);
     }
     free(date1);
@@ -354,7 +353,7 @@ void topkAgeRanges(char * arguments)
     {
         sprintf(message,"Not found any patient!\n");
         WriteToNamedPipe(fileDescriptorW,message);
-        // write(workerSock,message,strlen(message));
+
         free(date1);
         free(date2);
         return;
@@ -377,26 +376,26 @@ void topkAgeRanges(char * arguments)
         {
             sprintf(message,"0-20: %0.lf%%\n",percentCase[position]);
             WriteToNamedPipe(fileDescriptorW,message);
-            // write(workerSock,message,strlen(message));
+
         }
         else if(position == 1)
         {
             sprintf(message,"21-40: %0.lf%%\n",percentCase[position]);
             WriteToNamedPipe(fileDescriptorW,message);
-            // write(workerSock,message,strlen(message));
+
         }
         else if(position == 2)
         {
             sprintf(message,"41-60: %0.lf%%\n",percentCase[position]);
             WriteToNamedPipe(fileDescriptorW,message);
-            // write(workerSock,message,strlen(message));
+
         }
         else
         {
 
             sprintf(message,"60+: %0.lf%%\n",percentCase[position]);
             WriteToNamedPipe(fileDescriptorW,message);
-                // write(workerSock,message,strlen(message));
+
 
         }
         percentCase[position] = -1;
@@ -492,7 +491,7 @@ void numPatientAdmissions(char * arguments)
 
     tok = strtok(NULL,delimiters);
     date2 -> year = (long)atoi(tok);
-// diseaseFrequency H1N1 10-10-2010 20-20-2020 Greece
+
 
     tok = strtok(NULL,delimiters);
     // without country
@@ -506,7 +505,7 @@ void numPatientAdmissions(char * arguments)
 
         sprintf(message,"%ld\n", res);
         WriteToNamedPipe(fileDescriptorW,message);
-        // write(workerSock,message,strlen(message));
+
 
     }
     // user gave a country
@@ -522,7 +521,7 @@ void numPatientAdmissions(char * arguments)
         char message[MAXBUFFER];
         sprintf(message,"%ld\n", tResult);
         WriteToNamedPipe(fileDescriptorW,message);
-        // write(workerSock,message,strlen(message));
+
         free(country);
     }
     free(date1);
