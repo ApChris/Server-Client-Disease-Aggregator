@@ -41,17 +41,17 @@ void * mainThreadJob(void * argp)
 
     // Port
     struct sockaddr_in server;
-    uint64_t serverLength;
+    unsigned int serverLength;
     struct sockaddr * serverPointer;
 
     // Statistics
     struct sockaddr_in serverStat;
-    uint64_t serverLengthStat;
+    unsigned int serverLengthStat;
     struct sockaddr * serverPointerStat;
 
     struct sockaddr_in client;
     struct sockaddr * clientPointer;
-    uint64_t clientLength;
+    unsigned int clientLength;
 
     // For gethostbyname
     struct hostent * gtHName;
@@ -147,7 +147,7 @@ void * mainThreadJob(void * argp)
         FD_ZERO(&set);
         FD_SET(sockStat, &set);
 
-        timeOut.tv_sec = 3;
+        timeOut.tv_sec = 5;
         timeOut.tv_usec = 0;
 
         rv = select(sockStat + 1, &set, NULL, NULL, &timeOut);
@@ -161,11 +161,11 @@ void * mainThreadJob(void * argp)
         {
             if(totalWorkers == 0)
             {
-                printf("--> 10 seconds have passed -> Still listening for Workers\n");
+                printf("--> 5 seconds have passed -> Still listening for Workers\n");
             }
             else
             {
-                printf("--> 10 seconds have passed -> Thread is moving on Clients\n");
+                printf("--> 5 seconds have passed -> Thread is moving on Clients\n");
                 break;
 
             }
@@ -188,7 +188,7 @@ void * mainThreadJob(void * argp)
                     exit(EXIT_FAILURE);
                 }
                 printf("Accepted Worker connection\n");
-                PushBack_MyVector(bufferWorker,newSockStat);
+                PushBack_MyVector(bufferWorker,(long *)newSockStat);
                 totalWorkers++;
         }
 
@@ -200,7 +200,7 @@ void * mainThreadJob(void * argp)
         FD_ZERO(&set);
         FD_SET(sock, &set);
 
-        timeOut.tv_sec = 3;
+        timeOut.tv_sec = 5;
         timeOut.tv_usec = 0;
 
         rv = select(sock + 1, &set, NULL, NULL, &timeOut);
@@ -214,12 +214,12 @@ void * mainThreadJob(void * argp)
         {
             if(totalClients == 0)
             {
-                printf("--> 10 seconds have passed -> Still listening for Clients\n");
+                printf("--> 5 seconds have passed -> Still listening for Clients\n");
             }
             else
             {
                 // pthread_cond_signal(&condinationVariable);
-                printf("--> 10 seconds have passed -> Thread has finished with Clients\n");
+                printf("--> 5 seconds have passed -> Thread has finished with Clients\n");
                 break;
 
             }
@@ -243,7 +243,7 @@ void * mainThreadJob(void * argp)
                    exit(EXIT_FAILURE);
                }
 
-               PushBack_MyVector(bufferClient,newSock);
+               PushBack_MyVector(bufferClient,(long *)newSock);
 
                printf("Accepted Client connection\n");
 
@@ -256,22 +256,22 @@ void * mainThreadJob(void * argp)
 
 
 
-void * WorkersThreadJob(void * argp)
+void * WorkersThreadJob()
 {
 
-    long *id = argp;
+
     char * tok = NULL;
     pthread_mutex_lock(&mutex);
 
     char message[MAXIMUMBUFFER] = "";
     char tmpMessage[MAXIMUMBUFFER] = "";
 
-    long bytes = read(GetItem_MyVector(bufferWorker,indexOfVector), message, MAXIMUMBUFFER);
+    long bytes = read((long)GetItem_MyVector(bufferWorker,indexOfVector), message, MAXIMUMBUFFER);
 
     message[bytes] = '\0';
-    printf("%s\n",message, bytes);
-    write(GetItem_MyVector(bufferWorker,indexOfVector), "ReadStatistics", strlen("ReadStatics"));
-    bytes = read(GetItem_MyVector(bufferWorker,indexOfVector), tmpMessage, MAXIMUMBUFFER);
+    printf("%s\n",message);
+    write((long)GetItem_MyVector(bufferWorker,indexOfVector), "ReadStatistics", strlen("ReadStatics"));
+    bytes = read((long)GetItem_MyVector(bufferWorker,indexOfVector), tmpMessage, MAXIMUMBUFFER);
     tmpMessage[bytes] = '\0';
     tok = strtok(tmpMessage, "-");
     PushNode(&pidOfCountries,atol(tok));
@@ -284,19 +284,19 @@ void * WorkersThreadJob(void * argp)
 
 }
 
-void * ClientsThreadJob(void * argp)
+void * ClientsThreadJob()
 {
-    long * id = argp;
+
     char message[MAXIMUMBUFFER] = "";
     pthread_mutex_lock(&mutex);
     // printf("-----------------------------------------------> edwww\n");
-    long bytes = read(GetItem_MyVector(bufferClient,indexOfVectorC), message, MAXIMUMBUFFER);
+    long bytes = read((long)GetItem_MyVector(bufferClient,indexOfVectorC), message, MAXIMUMBUFFER);
 
     message[bytes] = '\0';
 
     // printf("Server Thread %ld received from --->%s\n", (long)GetItem_MyVector(bufferClient,indexOfVectorC), message);
     PushNode_Path(&queries,message);
-    write(GetItem_MyVector(bufferClient,indexOfVectorC), "Completed", strlen("Completed\0"));
+    write((long)GetItem_MyVector(bufferClient,indexOfVectorC), "Completed", strlen("Completed\0"));
 
     indexOfVectorC++;
     pthread_mutex_unlock(&mutex);
