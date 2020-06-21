@@ -60,72 +60,42 @@ void SetWorkersForRequests()
 {
     char message[MAXIMUMBUFFER];
 
-
-    // // for every worker
-    // for (long i = 0; i < totalWorkers; i++)
-    // {
-        // send
+    // send
     sprintf(message,"/ReadRequests");
-
     WriteToNamedPipe(GetValue(&writeNamedPipeList,0), message);
-    // write(GetValue(&writeNamedPipeList,i), message,strlen(message));
     kill(GetValue(&workersPidList,0),SIGUSR1);
 
-
-
     char result[MAXIMUMBUFFER*4] = "";
-    // for (long i = 0; i < totalWorkers; i++)
-    // {
 
-        long bytes = 0;
-        do
-        {
-            usleep(1);
-        }while((bytes = ReadFromNamedPipe(GetValue(&readNamedPipeList,0), result))<=0);
 
-        long lines = 0;
-        char * tok = NULL;
-        for (size_t i = 0; i < strlen(result); i++)
-        {
-           if(result[i] == '\n')
-           {
-               lines++;
-           }
-        }
-        printf("-->%s\n", result);
-        PrintList_Path(&queriesResults);
-        // printf("-------------------------\n");
-        tok = strtok(result, "\n");
-        PushNode_Path(&queries,result);
-        // printf("%s\n",tok);
-        for (long i = 1; i < lines; i++)
-        {
-           tok = strtok(NULL,"\n");
-           PushNode_Path(&queries,tok);
-           // printf("%s\n",tok);
-        }
-        // printf("----------EDWW---------------\n");
-        // PrintList_Path(&queries);
-        //
-        // // printf("%s\n",result);
-        // printf("--------------------------------------\n");
-        // char messageSend[MAXIMUMBUFFER*4] = "/SendRequests\n";
-        // for (size_t i = 0; i < LenOfList(&queries); i++)
-        // {
-        //     strcat(messageSend,GetValue_Path(&queries,i));
-        // }
+    long bytes = 0;
+    do
+    {
+        usleep(1);
+    }while((bytes = ReadFromNamedPipe(GetValue(&readNamedPipeList,0), result))<=0);
 
-        // // for every worker
-        // for (long i = 0; i < totalWorkers; i++)
-        // {
-            // send
-            // char messageSendFinal[MAXIMUMBUFFER*4] = "";
-        // sprintf(messageSendFinal,"/SendRequests %s",messageSend);
-        // printf("%s\n",messageSend);
-        // WriteToNamedPipe(GetValue(&writeNamedPipeList,0), messageSend);
-        // // write(GetValue(&writeNamedPipeList,i), message,strlen(message));
-        // kill(GetValue(&workersPidList,0),SIGUSR1);
-    // }
+    long lines = 0;
+    char * tok = NULL;
+    for (size_t i = 0; i < strlen(result); i++)
+    {
+       if(result[i] == '\n')
+       {
+           lines++;
+       }
+    }
+    printf("%s\n", result);
+    // PrintList_Path(&queriesResults);
+
+    tok = strtok(result, "\n");
+    PushNode_Path(&queries,result);
+
+    for (long i = 1; i < lines; i++)
+    {
+       tok = strtok(NULL,"\n");
+       PushNode_Path(&queries,tok);
+
+    }
+
 
 }
 
