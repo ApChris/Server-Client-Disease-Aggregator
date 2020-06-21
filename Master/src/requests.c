@@ -162,7 +162,7 @@ void Request_2(char * tok)
     sprintf(resultTemp,"%ld\n",res);
     strcat(resultFinal,resultTemp);
     PushNode_Path(&queriesResults,resultFinal);
-    printf("%ld\n",res);
+    // printf("%ld\n",res);
 }
 
 void Request_3(char * tok)
@@ -266,7 +266,7 @@ void Request_3(char * tok)
 
                 }while((bytes=ReadFromNamedPipe(GetValue(&readNamedPipeList,i), result))<=0);
 
-                printf("%s\n",result);
+                // printf("%s\n",result);
                 strcat(resultFinal,result);
             }
 
@@ -304,7 +304,7 @@ void Request_4(char * recordID)
         if(strcmp(result,"Not Found"))
         {
             sprintf(resultFinal,"/searchPatientRecord %s\n%s\n",recordID,result);
-            printf("%s\n", result);
+            // printf("%s\n", result);
         }
         else
         {
@@ -315,7 +315,7 @@ void Request_4(char * recordID)
     if(counterNotFound == totalWorkers)
     {
         sprintf(resultFinal,"/searchPatientRecord %s\n%s\n",recordID,result);
-        printf("%s\n",result);
+        // printf("%s\n",result);
     }
     PushNode_Path(&queriesResults,resultFinal);
 }
@@ -450,7 +450,7 @@ void Request_5(char * tok)
         if(!country)
         {
 
-            printf("%s %ld\n",tok, atol(result));
+            // printf("%s %ld\n",tok, atol(result));
             sprintf(resultTemp,"%s %ld\n",tok, atol(result));
             strcat(resultFinal,resultTemp);
         }
@@ -458,7 +458,7 @@ void Request_5(char * tok)
         {
             if(!strcmp(country,tok))
             {
-                printf("%s %ld\n",tok, atol(result));
+                // printf("%s %ld\n",tok, atol(result));
                 sprintf(resultTemp,"%s %ld\n",tok, atol(result));
                 strcat(resultFinal,resultTemp);
             }
@@ -596,7 +596,7 @@ void Request_6(char * tok)
         tok = strtok(NULL, delimiters);
         if(!country)
         {
-            printf("%s %ld\n",tok, atol(result));
+            // printf("%s %ld\n",tok, atol(result));
             sprintf(resultTemp,"%s %ld\n",tok, atol(result));
             strcat(resultFinal,resultTemp);
         }
@@ -604,7 +604,7 @@ void Request_6(char * tok)
         {
             if(!strcmp(country,tok))
             {
-                printf("%s %ld\n",tok, atol(result));
+                // printf("%s %ld\n",tok, atol(result));
                 sprintf(resultTemp,"%s %ld\n",tok, atol(result));
                 strcat(resultFinal,resultTemp);
             }

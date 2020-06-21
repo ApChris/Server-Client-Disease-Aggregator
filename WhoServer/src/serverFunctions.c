@@ -147,7 +147,7 @@ void * mainThreadJob(void * argp)
         FD_ZERO(&set);
         FD_SET(sockStat, &set);
 
-        timeOut.tv_sec = 5;
+        timeOut.tv_sec = 3;
         timeOut.tv_usec = 0;
 
         rv = select(sockStat + 1, &set, NULL, NULL, &timeOut);
@@ -161,11 +161,11 @@ void * mainThreadJob(void * argp)
         {
             if(totalWorkers == 0)
             {
-                printf("--> 5 seconds have passed -> Still listening for Workers\n");
+                printf("--> 3 seconds have passed -> Still listening for Workers\n");
             }
             else
             {
-                printf("--> 5 seconds have passed -> Thread is moving on Clients\n");
+                printf("--> 3 seconds have passed -> Thread is moving on Clients\n");
                 break;
 
             }
@@ -200,7 +200,7 @@ void * mainThreadJob(void * argp)
         FD_ZERO(&set);
         FD_SET(sock, &set);
 
-        timeOut.tv_sec = 5;
+        timeOut.tv_sec = 3;
         timeOut.tv_usec = 0;
 
         rv = select(sock + 1, &set, NULL, NULL, &timeOut);
@@ -214,12 +214,12 @@ void * mainThreadJob(void * argp)
         {
             if(totalClients == 0)
             {
-                printf("--> 5 seconds have passed -> Still listening for Clients\n");
+                printf("--> 3 seconds have passed -> Still listening for Clients\n");
             }
             else
             {
                 // pthread_cond_signal(&condinationVariable);
-                printf("--> 5 seconds have passed -> Thread has finished with Clients\n");
+                printf("--> 3 seconds have passed -> Thread has finished with Clients\n");
                 break;
 
             }

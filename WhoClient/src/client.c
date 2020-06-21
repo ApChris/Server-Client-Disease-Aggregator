@@ -108,6 +108,9 @@ int main(int argc, char const *argv[])
         }
     }
 
+    pthread_mutex_destroy(&mutex);
+    pthread_cond_destroy(&condinationVariable);
+    pthread_exit(NULL);
     free(threadsVector);
     free(buffer);
     DeleteList_Path(&queries);

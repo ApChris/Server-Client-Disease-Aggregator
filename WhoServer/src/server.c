@@ -4,9 +4,6 @@
 #include "../include/serverFunctions.h"
 
 
-
-
-
 // arguments
 long queryPortNum;
 long statisticsPortNum;
@@ -202,6 +199,15 @@ int main(int argc, char const *argv[])
         }
     }
     printf("-----Results printing has been terminated--------\n\n");
-
+    free(bufferWorker);
+    free(bufferClient);
+    free(threadsVector);
+    DeleteList_Path(&queries);
+    DeleteList_Path(&countries);
+    DeleteList(&pidOfCountries);
+    printf("-----Deallocating has been terminated--------\n\n");
+    pthread_mutex_destroy(&mutex);
+    pthread_cond_destroy(&condinationVariable);
+    pthread_exit(NULL);
     return 0;
 }
