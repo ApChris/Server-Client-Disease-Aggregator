@@ -16,18 +16,18 @@ OBJSWORKER = 	Master/build/worker.o \
 OBJS2 = WhoServer/build/server.o \
 		WhoServer/build/myVector.o \
 		WhoServer/build/serverFunctions.o \
-		WhoServer/build/requestsFromServer.o \
 		Master/build/list.o \
 
 
 OBJS3 = WhoClient/build/client.o \
+		WhoClient/build/clientFunctions.o	\
 		WhoServer/build/myVector.o	\
 		Master/build/list.o \
 		Master/build/date.o \
 # OBJS3 =
 
 CC = gcc -pthread
-FLAGS = -Wextra -Wall -g -c
+FLAGS = -Wextra -g -c
 
 TARGET = master
 TARGETWORKER = worker
@@ -89,12 +89,13 @@ WhoServer/build/myVector.o: WhoServer/src/myVector.c
 WhoServer/build/serverFunctions.o: WhoServer/src/serverFunctions.c
 	$(CC) $(FLAGS) $< -o $@
 
-WhoServer/build/requestsFromServer.o: WhoServer/src/requestsFromServer.c
-	$(CC) $(FLAGS) $< -o $@
 
 
 # CLIENT
 WhoClient/build/client.o: WhoClient/src/client.c
+	$(CC) $(FLAGS) $< -o $@
+
+WhoClient/build/clientFunctions.o: WhoClient/src/clientFunctions.c
 	$(CC) $(FLAGS) $< -o $@
 
 $(TARGET) : $(OBJS)
