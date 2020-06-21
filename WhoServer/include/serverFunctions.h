@@ -7,6 +7,7 @@
 #include <sys/wait.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <netdb.h>
 #include <netinet/in.h>
 #include <pthread.h>
 #include <time.h>
@@ -14,12 +15,12 @@
 #include "../include/myVector.h"
 #include "../../Master/include/list.h"
 #include "../../Master/include/requests.h"
-#include "../include/requestsFromServer.h"
+
 #define MAXIMUMBUFFER 4096
 
 long ReadFromSocket(long fileDescriptor, char * buffer);
 void WriteToSocket(long fileDescriptor, char * buffer);
 void * mainThreadJob(void * argp);
-void * WorkersThreadJob(void * argp);
-void * ClientsThreadJob(void * argp);
+void * WorkersThreadJob();
+void * ClientsThreadJob();
 #endif
