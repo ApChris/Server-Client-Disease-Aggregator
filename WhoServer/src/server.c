@@ -37,7 +37,7 @@ Node * pidOfCountries = NULL;
 int main(int argc, char const *argv[])
 {
 
-    pthread_t * thread;
+    pthread_t thread;
 
     threadsVector = Init_MyVector();
 
@@ -100,18 +100,11 @@ int main(int argc, char const *argv[])
         threadsIDS[i] = i;
     }
 
-    // create main Thread
-    if((thread = (pthread_t *)malloc(sizeof(pthread_t))) == NULL)
-    {
-        perror("Pthread malloc has been failed!:");
-        exit(EXIT_FAILURE);
-    }
-    else
-    {
-        pthread_create(&thread, NULL, mainThreadJob ,(void *)&threadsIDS[0]);
-        PushBack_MyVector(threadsVector, thread);
+    // main job
+    pthread_create(&thread, NULL, mainThreadJob ,(void *)&threadsIDS[0]);
+    PushBack_MyVector(threadsVector, (long *)thread);
 
-    }
+
 
     if(pthread_join((long)GetItem_MyVector(threadsVector,0), NULL))
     {
@@ -121,21 +114,15 @@ int main(int argc, char const *argv[])
     printf("-------Statistics-------\n\n");
     for (long i = 1; i <= totalWorkers; i++)
     {
+        pthread_t thread;
 
-        if((thread = (pthread_t *)malloc(sizeof(pthread_t))) == NULL)
-        {
-            perror("Pthread malloc has been failed!:");
-            exit(EXIT_FAILURE);
-        }
-        else
-        {
-            pthread_create(&thread, NULL, WorkersThreadJob ,(void *)&threadsIDS[i]);
+        pthread_create(&thread, NULL, WorkersThreadJob ,NULL);
 
-            PushBack_MyVector(threadsVector, thread);
-            pthread_mutex_lock(&mutex);
-            currentWorkers++;
-            pthread_mutex_unlock(&mutex);
-        }
+        PushBack_MyVector(threadsVector, (long *)thread);
+        pthread_mutex_lock(&mutex);
+        currentWorkers++;
+        pthread_mutex_unlock(&mutex);
+
     }
     for (long i = 1; i <= totalWorkers; i++)
     {
@@ -148,20 +135,15 @@ int main(int argc, char const *argv[])
 
     for (long i = totalWorkers + 1; i <= totalWorkers + totalClients; i++)
     {
-        if((thread = (pthread_t *)malloc(sizeof(pthread_t))) == NULL)
-        {
-            perror("Pthread malloc has been failed!:");
-            exit(EXIT_FAILURE);
-        }
-        else
-        {
-            pthread_create(&thread, NULL, ClientsThreadJob ,(void *)&threadsIDS[i]);
+        pthread_t thread;
 
-            PushBack_MyVector(threadsVector, thread);
-            pthread_mutex_lock(&mutex);
-            currentClients++;
-            pthread_mutex_unlock(&mutex);
-        }
+        pthread_create(&thread, NULL, ClientsThreadJob ,NULL);
+
+        PushBack_MyVector(threadsVector, (long *)thread);
+        pthread_mutex_lock(&mutex);
+        currentClients++;
+        pthread_mutex_unlock(&mutex);
+
     }
 
     for (long i = totalWorkers + 1; i <= totalWorkers + totalClients; i++)
