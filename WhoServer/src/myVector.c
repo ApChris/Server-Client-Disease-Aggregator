@@ -42,7 +42,7 @@ void * GetItem_MyVector(myVector * vec, long position)
     {
         return vec -> items[position];
     }
-
+    // return NULL;
 
 }
 
@@ -52,30 +52,18 @@ void Print_MyVector(myVector * vec, char type)
     {
         for (long i = 0; i < Length_MyVector(vec); i++)
         {
-            printf("%ld\n", GetItem_MyVector(vec, i));
+            printf("%ld\n", (long)GetItem_MyVector(vec, i));
         }
     }
     else if(type == 's')
     {
         for (long i = 0; i < Length_MyVector(vec); i++)
         {
-            printf("%s\n", GetItem_MyVector(vec, i));
+            printf("%s\n", (char *)GetItem_MyVector(vec, i));
         }
     }
-    else if(type == 'c')
-    {
-        for (long i = 0; i < Length_MyVector(vec); i++)
-        {
-            printf("%c\n", GetItem_MyVector(vec, i));
-        }
-    }
-    else if(type == 'f')
-    {
-        for (long i = 0; i < Length_MyVector(vec); i++)
-        {
-            printf("%lf\n", GetItem_MyVector(vec, i));
-        }
-    }
+
+
 }
 
 void UpdateItem_MyVector(myVector * vec, void * newItem, long position)
