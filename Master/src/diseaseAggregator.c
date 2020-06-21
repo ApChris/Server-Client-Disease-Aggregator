@@ -159,8 +159,6 @@ int main(int argc, char const *argv[])
     StartReadingFiles();
 
     printf("Requests\n");
-
-    PrintList(&workersPidList);
     SetWorkersForRequests();
     Read_Requests();
 
